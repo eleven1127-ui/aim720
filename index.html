@@ -130,23 +130,29 @@
             background-color: transparent;
             box-shadow: none;
         }
+        .trac-table-container {
+            overflow-x: auto; /* Allows horizontal scrolling for the table */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            border-radius: 8px; /* Apply border-radius to container */
+            border: 1px solid #e0e7eb; /* Apply border to container */
+        }
         .trac-table {
-            width: 100%;
+            width: 100%; /* Default to 100% width */
+            min-width: 700px; /* Minimum width to prevent excessive squeezing on smaller screens */
             border-collapse: collapse;
-            margin-top: 1rem;
-            border-radius: 8px; /* Rounded corners for the table */
-            overflow: hidden; /* Ensures rounded corners apply to content */
-            border: 1px solid #e0e7eb; /* Add border to the table itself */
+            margin-top: 0; /* Remove margin as container has padding */
         }
         .trac-table th, .trac-table td {
             border: 1px solid #e0e7eb;
             padding: 0.75rem;
             text-align: left;
+            white-space: nowrap; /* Prevent text wrapping in table headers/cells */
         }
         .trac-table th {
             background-color: #e0f2fe; /* Light sky blue */
             font-weight: 600;
             color: #3b82f6; /* Sky blue */
+            position: relative; /* For delete button positioning */
         }
         .trac-table td {
             background-color: #ffffff;
@@ -168,6 +174,27 @@
         .trac-table th[contenteditable="true"]:focus {
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Custom focus ring */
             background-color: #e0f2fe; /* Keep active background on focus */
+        }
+        .trac-table th .delete-column-btn {
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+            padding: 0.2rem; /* Make clickable area larger */
+        }
+        .trac-table th .delete-column-btn:hover {
+            opacity: 1;
+        }
+        /* Hide delete button for non-editable/non-deletable columns */
+        .trac-table th:not([data-column-key^="customCol_"]) .delete-column-btn {
+            display: none;
         }
 
 
@@ -281,7 +308,7 @@
             margin-right: 0.75rem;
             transform: scale(1.1);
             accent-color: #3b82f6;
-            border-radius: 4px;
+            border-radius: 44px;
             flex-shrink: 0;
         }
         .todo-subtask-item.completed {
@@ -333,8 +360,8 @@
                 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             }
             .tab-button {
-                padding: 0.75rem 1rem;
-                font-size: 0.9rem;
+                padding: 0.75rem 0.5rem; /* Smaller padding for tabs */
+                font-size: 0.8rem; /* Smaller font size for tabs */
             }
             .tab-content {
                 padding: 1.5rem;
@@ -347,14 +374,18 @@
                 margin-bottom: 0.5rem;
             }
             .trac-table th, .trac-table td {
-                padding: 0.5rem;
+                padding: 0.4rem 0.3rem; /* More compact padding for table cells */
+                font-size: 0.75rem; /* Smaller font size for table content */
             }
             .trac-table th:nth-child(1), .trac-table td:nth-child(1) {
-                width: 20%; /* Adjusted width for even more columns */
+                width: auto; /* Let content dictate width */
             }
             .trac-table th:not(:nth-child(1)), .trac-table td:not(:nth-child(1)) {
-                width: 6%; /* Even smaller width for many checkboxes */
+                width: auto; /* Let content dictate width */
                 text-align: center;
+            }
+            .trac-table input[type="checkbox"] {
+                transform: scale(1); /* Slightly smaller checkboxes */
             }
             .sub-tab-button {
                 padding: 0.6rem 0.8rem;
@@ -390,6 +421,14 @@
             }
             .add-subtask-form {
                 padding: 0 1rem 0.75rem;
+            }
+            /* Adjust input and button sizes for mobile forms */
+            .flex.mb-4.space-x-3 input,
+            .flex.mb-4.space-x-3 button,
+            .flex.items-center.space-x-3.mb-4 input,
+            .flex.items-center.space-x-3.mb-4 button {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -441,7 +480,11 @@
                     <input type="text" id="newBioChapterInput" placeholder="Add Biology Chapter Name..." class="flex-1">
                     <button id="addBioChapterButton" class="btn-primary">Add Chapter</button>
                 </div>
-                <div id="bioChapters">
+                <div class="flex items-center space-x-3 mb-4">
+                    <input type="text" id="newTracColumnInput" placeholder="Add custom column name..." class="flex-1">
+                    <button id="addTracColumnButton" class="btn-secondary">Add Custom Column</button>
+                </div>
+                <div id="bioChapters" class="trac-table-container">
                     <!-- Biology chapters will be rendered here -->
                 </div>
             </div>
@@ -452,7 +495,11 @@
                     <input type="text" id="newChemChapterInput" placeholder="Add Chemistry Chapter Name..." class="flex-1">
                     <button id="addChemChapterButton" class="btn-primary">Add Chapter</button>
                 </div>
-                <div id="chemChapters">
+                <div class="flex items-center space-x-3 mb-4">
+                    <input type="text" id="newTracColumnInputChem" placeholder="Add custom column name..." class="flex-1">
+                    <button id="addTracColumnButtonChem" class="btn-secondary">Add Custom Column</button>
+                </div>
+                <div id="chemChapters" class="trac-table-container">
                     <!-- Chemistry chapters will be rendered here -->
                 </div>
             </div>
@@ -463,7 +510,11 @@
                     <input type="text" id="newPhysChapterInput" placeholder="Add Physics Chapter Name..." class="flex-1">
                     <button id="addPhysChapterButton" class="btn-primary">Add Chapter</button>
                 </div>
-                <div id="physChapters">
+                <div class="flex items-center space-x-3 mb-4">
+                    <input type="text" id="newTracColumnInputPhys" placeholder="Add custom column name..." class="flex-1">
+                    <button id="addTracColumnButtonPhys" class="btn-secondary">Add Custom Column</button>
+                </div>
+                <div id="physChapters" class="trac-table-container">
                     <!-- Physics chapters will be rendered here -->
                 </div>
             </div>
@@ -922,30 +973,54 @@
 
         // --- Trac Tab Logic ---
         const LOCAL_STORAGE_TRAC_KEY = 'tracData';
+        const fixedColumns = ['Chapter Name', 'Actions']; // Columns that cannot be edited or deleted
+        const revisionColumns = ['revision1', 'revision2', 'revision3', 'revision4', 'revision5']; // Keys for revision sub-columns
+
+        // Define the default order and properties of built-in columns
+        const defaultColumnOrder = [
+            { key: 'lec', name: 'Lec', editable: true, deletable: false },
+            { key: 'dpp', name: 'DPP', editable: true, deletable: false },
+            { key: 'module', name: 'Module', editable: true, deletable: false },
+            { key: 'neetPyq', name: 'NEET PYQ', editable: true, deletable: false },
+            { key: 'jeePyq', name: 'JEE PYQ', editable: true, deletable: false },
+            { key: 'referenceBook', name: 'REF BOOK', editable: true, deletable: false },
+            { key: 'mainsLvl', name: 'MAINS LVL', editable: true, deletable: false },
+            { key: 'ncert', name: 'NCERT', editable: true, deletable: false },
+            { key: 'pitaraLtl', name: 'PITARA (LTL)', editable: true, deletable: false },
+            { key: 'infinityPractice', name: 'INFINITY PRACTISE', editable: true, deletable: false },
+            { key: 'kps', name: 'KPS', editable: true, deletable: false }, // New
+            { key: 'nps', name: 'NPS', editable: true, deletable: false }, // New
+            { key: 'highAssignment', name: 'High Assignment', editable: true, deletable: false }, // New
+            { key: 'prepMeter', name: 'PREP METER', editable: true, deletable: false },
+            // Revision columns are handled separately for header colspan, but their individual names are editable
+            { key: 'revision1', name: 'R1', editable: true, deletable: false },
+            { key: 'revision2', name: 'R2', editable: true, deletable: false },
+            { key: 'revision3', name: 'R3', editable: true, deletable: false },
+            { key: 'revision4', name: 'R4', editable: true, deletable: false },
+            { key: 'revision5', name: 'R5', editable: true, deletable: false }
+        ];
+
         let tracData = {
             bio: [],
             chem: [],
             phys: [],
-            // Default column names, can be overridden by user edits
-            customColumnNames: {
-                lec: 'Lec',
-                dpp: 'DPP',
-                module: 'Module',
-                neetPyq: 'NEET PYQ',
-                jeePyq: 'JEE PYQ',
-                referenceBook: 'REF BOOK',
-                mainsLvl: 'MAINS LVL',
-                ncert: 'NCERT',
-                pitaraLtl: 'PITARA (LTL)',
-                infinityPractice: 'INFINITY PRACTISE',
-                prepMeter: 'PREP METER',
-                revision1: 'R1',
-                revision2: 'R2',
-                revision3: 'R3',
-                revision4: 'R4',
-                revision5: 'R5'
-            }
+            // customColumnNames will store user-defined names for all columns (built-in and dynamic)
+            customColumnNames: {}
         };
+
+        // Initialize customColumnNames with default values
+        defaultColumnOrder.forEach(col => {
+            tracData.customColumnNames[col.key] = col.name;
+        });
+
+        // Elements for adding custom columns
+        const newTracColumnInputBio = document.getElementById('newTracColumnInput');
+        const addTracColumnButtonBio = document.getElementById('addTracColumnButton');
+        const newTracColumnInputChem = document.getElementById('newTracColumnInputChem');
+        const addTracColumnButtonChem = document.getElementById('addTracColumnButtonChem');
+        const newTracColumnInputPhys = document.getElementById('newTracColumnInputPhys');
+        const addTracColumnButtonPhys = document.getElementById('addTracColumnButtonPhys');
+
 
         const tracBioSubTab = document.getElementById('tracBioSubTab');
         const tracChemSubTab = document.getElementById('tracChemSubTab');
@@ -996,15 +1071,31 @@
         function loadTracData() {
             const storedTracData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_TRAC_KEY));
             if (storedTracData) {
-                // Merge stored custom column names with defaults to handle new columns
-                tracData = {
-                    ...tracData, // Keep default structure
-                    ...storedTracData, // Overwrite with stored data
-                    customColumnNames: {
-                        ...tracData.customColumnNames, // Keep default column names
-                        ...(storedTracData.customColumnNames || {}) // Overwrite with stored custom names if available
-                    }
-                };
+                // Ensure default columns are present and merge custom names
+                tracData.bio = storedTracData.bio || [];
+                tracData.chem = storedTracData.chem || [];
+                tracData.phys = storedTracData.phys || [];
+
+                // Re-initialize customColumnNames with defaults, then overwrite with stored custom names
+                defaultColumnOrder.forEach(col => {
+                    tracData.customColumnNames[col.key] = col.name;
+                });
+                if (storedTracData.customColumnNames) {
+                    Object.assign(tracData.customColumnNames, storedTracData.customColumnNames);
+                }
+                // Add any dynamically added columns from stored data
+                if (storedTracData.dynamicColumns) {
+                    tracData.dynamicColumns = storedTracData.dynamicColumns;
+                    storedTracData.dynamicColumns.forEach(colKey => {
+                        if (!tracData.customColumnNames[colKey]) { // Add if not already present
+                             tracData.customColumnNames[colKey] = storedTracData.customColumnNames[colKey] || colKey;
+                        }
+                    });
+                } else {
+                    tracData.dynamicColumns = [];
+                }
+            } else {
+                tracData.dynamicColumns = []; // Initialize if no stored data
             }
         }
 
@@ -1016,6 +1107,11 @@
         function updateCustomColumnName(key, newName) {
             tracData.customColumnNames[key] = newName;
             saveTracData();
+            // Re-render the current tab to reflect the name change immediately
+            const activeSubTab = document.querySelector('.sub-tab-button.active');
+            if (activeSubTab) {
+                showTracSubTab(activeSubTab.id.replace('trac', '').replace('SubTab', '').toLowerCase());
+            }
         }
 
         function renderTracChapters(subject) {
@@ -1044,36 +1140,44 @@
             const table = document.createElement('table');
             table.className = 'trac-table';
 
-            // Dynamically create table headers based on customColumnNames
-            let headerRow1 = `
-                <thead>
-                    <tr>
-                        <th rowspan="2">Chapter Name</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="lec">${tracData.customColumnNames.lec}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="dpp">${tracData.customColumnNames.dpp}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="module">${tracData.customColumnNames.module}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="neetPyq">${tracData.customColumnNames.neetPyq}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="jeePyq">${tracData.customColumnNames.jeePyq}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="referenceBook">${tracData.customColumnNames.referenceBook}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="mainsLvl">${tracData.customColumnNames.mainsLvl}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="ncert">${tracData.customColumnNames.ncert}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="pitaraLtl">${tracData.customColumnNames.pitaraLtl}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="infinityPractice">${tracData.customColumnNames.infinityPractice}</th>
-                        <th rowspan="2" contenteditable="true" data-column-key="prepMeter">${tracData.customColumnNames.prepMeter}</th>
-                        <th colspan="5">REVISION</th>
-                        <th rowspan="2">Actions</th>
-                    </tr>
-                    <tr>
-                        <th contenteditable="true" data-column-key="revision1">${tracData.customColumnNames.revision1}</th>
-                        <th contenteditable="true" data-column-key="revision2">${tracData.customColumnNames.revision2}</th>
-                        <th contenteditable="true" data-column-key="revision3">${tracData.customColumnNames.revision3}</th>
-                        <th contenteditable="true" data-column-key="revision4">${tracData.customColumnNames.revision4}</th>
-                        <th contenteditable="true" data-column-key="revision5">${tracData.customColumnNames.revision5}</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            `;
-            table.innerHTML = headerRow1;
+            // Construct headers dynamically
+            let headerHtml = '<thead><tr><th rowspan="2">Chapter Name</th>';
+            let subHeaderHtml = '<tr>';
+
+            // Combine default and dynamic columns, maintaining order
+            const allColumnKeys = defaultColumnOrder.map(col => col.key).concat(tracData.dynamicColumns.filter(key => !defaultColumnOrder.some(dCol => dCol.key === key)));
+
+            allColumnKeys.forEach(colKey => {
+                const isRevisionCol = revisionColumns.includes(colKey);
+                const isBuiltIn = defaultColumnOrder.some(col => col.key === colKey);
+                const isDynamic = tracData.dynamicColumns.includes(colKey);
+
+                if (!isRevisionCol) {
+                    // Main headers (excluding individual revision columns)
+                    const colName = tracData.customColumnNames[colKey] || colKey;
+                    const isEditable = isBuiltIn ? defaultColumnOrder.find(c => c.key === colKey).editable : true; // Dynamic columns are always editable
+                    const isDeletable = isDynamic; // Only dynamic columns can be deleted
+
+                    headerHtml += `<th rowspan="2" ${isEditable ? 'contenteditable="true"' : ''} data-column-key="${colKey}">${colName}`;
+                    if (isDeletable) {
+                        headerHtml += `<button class="delete-column-btn" data-column-key="${colKey}">x</button>`;
+                    }
+                    headerHtml += `</th>`;
+                }
+            });
+
+            // Add the Revision header with colspan
+            headerHtml += `<th colspan="5">REVISION</th><th rowspan="2">Actions</th></tr>`;
+
+            // Add sub-headers for Revision columns
+            revisionColumns.forEach(colKey => {
+                const colName = tracData.customColumnNames[colKey] || colKey;
+                const isEditable = defaultColumnOrder.find(c => c.key === colKey).editable;
+                subHeaderHtml += `<th ${isEditable ? 'contenteditable="true"' : ''} data-column-key="${colKey}">${colName}</th>`;
+            });
+            subHeaderHtml += `</tr>`;
+
+            table.innerHTML = headerHtml + subHeaderHtml + '<tbody></tbody>';
             const tbody = table.querySelector('tbody');
 
             chaptersArray.forEach(chapter => {
@@ -1081,26 +1185,16 @@
                 row.dataset.id = chapter.id;
                 row.dataset.subject = subject;
 
-                row.innerHTML = `
-                    <td>${chapter.name}</td>
-                    <td><input type="checkbox" data-column="lec" ${chapter.lec ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="dpp" ${chapter.dpp ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="module" ${chapter.module ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="neetPyq" ${chapter.neetPyq ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="jeePyq" ${chapter.jeePyq ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="referenceBook" ${chapter.referenceBook ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="mainsLvl" ${chapter.mainsLvl ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="ncert" ${chapter.ncert ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="pitaraLtl" ${chapter.pitaraLtl ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="infinityPractice" ${chapter.infinityPractice ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="prepMeter" ${chapter.prepMeter ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="revision1" ${chapter.revision1 ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="revision2" ${chapter.revision2 ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="revision3" ${chapter.revision3 ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="revision4" ${chapter.revision4 ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="revision5" ${chapter.revision5 ? 'checked' : ''}></td>
-                    <td><button class="btn-danger text-xs px-2 py-1 delete-chapter-btn">Delete</button></td>
-                `;
+                let rowHtml = `<td>${chapter.name}</td>`;
+
+                allColumnKeys.forEach(colKey => {
+                    // Ensure all columns (built-in and dynamic) are rendered
+                    const isChecked = chapter[colKey] || false; // Default to false if not present
+                    rowHtml += `<td><input type="checkbox" data-column="${colKey}" ${isChecked ? 'checked' : ''}></td>`;
+                });
+
+                rowHtml += `<td><button class="btn-danger text-xs px-2 py-1 delete-chapter-btn">Delete</button></td>`;
+                row.innerHTML = rowHtml;
                 tbody.appendChild(row);
             });
 
@@ -1124,6 +1218,14 @@
                         event.preventDefault();
                         event.target.blur(); // Trigger blur to save changes
                     }
+                });
+            });
+
+            // Add event listeners for delete column buttons
+            table.querySelectorAll('.delete-column-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const columnKey = event.target.dataset.columnKey;
+                    deleteTracColumn(columnKey);
                 });
             });
 
@@ -1152,23 +1254,13 @@
                 const newChapter = {
                     id: Date.now(),
                     name: chapterName,
-                    lec: false,
-                    dpp: false,
-                    module: false,
-                    neetPyq: false,
-                    jeePyq: false,
-                    referenceBook: false,
-                    mainsLvl: false,
-                    ncert: false,
-                    pitaraLtl: false,
-                    infinityPractice: false,
-                    prepMeter: false,
-                    revision1: false, // New revision column
-                    revision2: false, // New revision column
-                    revision3: false, // New revision column
-                    revision4: false, // New revision column
-                    revision5: false // New revision column
                 };
+                // Initialize all existing columns (built-in and dynamic) to false
+                const allColumnKeys = defaultColumnOrder.map(col => col.key).concat(tracData.dynamicColumns);
+                allColumnKeys.forEach(colKey => {
+                    newChapter[colKey] = false;
+                });
+
                 tracData[subject].push(newChapter);
                 inputElement.value = '';
                 saveTracData();
@@ -1190,9 +1282,80 @@
             renderTracChapters(subject);
         }
 
+        // Function to add a new custom column
+        function addTracColumn(inputElement) {
+            const columnName = inputElement.value.trim();
+            if (!columnName) {
+                alert("Column name cannot be empty.");
+                return;
+            }
+
+            // Generate a unique key for the new column
+            const columnKey = 'customCol_' + Date.now();
+
+            // Add to custom column names and dynamic columns list
+            tracData.customColumnNames[columnKey] = columnName;
+            tracData.dynamicColumns.push(columnKey);
+
+            // Initialize this new column for all existing chapters in all subjects to false
+            ['bio', 'chem', 'phys'].forEach(subject => {
+                tracData[subject].forEach(chapter => {
+                    chapter[columnKey] = false;
+                });
+            });
+
+            inputElement.value = '';
+            saveTracData();
+            // Re-render the current tab to show the new column
+            const activeSubTab = document.querySelector('.sub-tab-button.active');
+            if (activeSubTab) {
+                showTracSubTab(activeSubTab.id.replace('trac', '').replace('SubTab', '').toLowerCase());
+            }
+        }
+
+        // Function to delete a custom column
+        function deleteTracColumn(columnKeyToDelete) {
+            // Prevent deletion of built-in columns
+            const isBuiltIn = defaultColumnOrder.some(col => col.key === columnKeyToDelete);
+            if (isBuiltIn) {
+                alert("Cannot delete built-in columns.");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete the column "${tracData.customColumnNames[columnKeyToDelete]}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            // Remove from custom column names
+            delete tracData.customColumnNames[columnKeyToDelete];
+
+            // Remove from dynamic columns list
+            tracData.dynamicColumns = tracData.dynamicColumns.filter(key => key !== columnKeyToDelete);
+
+            // Remove this column's data from all chapters in all subjects
+            ['bio', 'chem', 'phys'].forEach(subject => {
+                tracData[subject].forEach(chapter => {
+                    delete chapter[columnKeyToDelete];
+                });
+            });
+
+            saveTracData();
+            // Re-render the current tab to reflect the changes
+            const activeSubTab = document.querySelector('.sub-tab-button.active');
+            if (activeSubTab) {
+                showTracSubTab(activeSubTab.id.replace('trac', '').replace('SubTab', '').toLowerCase());
+            }
+        }
+
+
         addBioChapterButton.addEventListener('click', () => addTracChapter('bio', newBioChapterInput));
         addChemChapterButton.addEventListener('click', () => addTracChapter('chem', newChemChapterInput));
         addPhysChapterButton.addEventListener('click', () => addTracChapter('phys', newPhysChapterInput));
+
+        addTracColumnButtonBio.addEventListener('click', () => addTracColumn(newTracColumnInputBio));
+        addTracColumnButtonChem.addEventListener('click', () => addTracColumn(newTracColumnInputChem));
+        addTracColumnButtonPhys.addEventListener('click', () => addTracColumn(newTracColumnInputPhys));
+
 
         // --- Initial Load ---
         window.onload = function() {

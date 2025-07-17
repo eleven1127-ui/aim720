@@ -161,6 +161,15 @@
             display: block;
             accent-color: #3b82f6; /* Sky blue checkbox */
         }
+        .trac-table th[contenteditable="true"] {
+            cursor: text;
+            outline: none; /* Remove default focus outline */
+        }
+        .trac-table th[contenteditable="true"]:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Custom focus ring */
+            background-color: #e0f2fe; /* Keep active background on focus */
+        }
+
 
         /* Sub-tab styles for Trac */
         .sub-tab-button {
@@ -591,7 +600,7 @@
         // Utility function to format time (HH:MM:SS)
         function formatTime(ms) {
             const totalSeconds = Math.floor(ms / 1000);
-            const hours = Math.floor((totalSeconds % 3600) / 60); // Changed to minutes for HH:MM:SS
+            const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
 
@@ -671,6 +680,18 @@
                 const actionIconsDiv = document.createElement('div');
                 actionIconsDiv.className = 'action-icons';
 
+                // Reset Timer SVG Icon
+                const resetIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                resetIcon.setAttribute("viewBox", "0 0 24 24");
+                resetIcon.setAttribute("fill", "currentColor");
+                resetIcon.className = "reset-icon";
+                resetIcon.innerHTML = `
+                    <path fill-rule="evenodd" d="M16.03 4.47A.75.75 0 0 1 18 5.25v1.5a.75.75 0 0 1-1.5 0V5.922l-3.03 3.03a.75.75 0 1 1-1.06-1.06l3.03-3.03H16.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M8.47 19.53a.75.75 0 0 1 0-1.06l3.03-3.03H7.5a.75.75 0 0 1-.75-.75v-1.5a.75.75 0 0 1 1.5 0v.828l3.03-3.03a.75.75 0 1 1 1.06 1.06l-3.03 3.03H16.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-.828l-3.03 3.03a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" />
+                `;
+                resetIcon.addEventListener('click', () => resetCategoryTimer(category.id));
+
+
                 // Edit SVG Icon (Placeholder functionality for now)
                 const editIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 editIcon.setAttribute("viewBox", "0 0 24 24");
@@ -695,6 +716,7 @@
                 `;
                 deleteIcon.addEventListener('click', () => deleteTodoCategory(category.id));
 
+                actionIconsDiv.appendChild(resetIcon); // Add reset icon
                 actionIconsDiv.appendChild(editIcon);
                 actionIconsDiv.appendChild(deleteIcon);
 
@@ -852,6 +874,17 @@
             category.intervalId = null; // Clear interval ID
         }
 
+        // Function to reset a timer for a specific category
+        function resetCategoryTimer(categoryId) {
+            const category = todoCategories.find(cat => cat.id === categoryId);
+            if (!category) return;
+
+            stopCategoryTimer(categoryId); // Stop if running
+            category.elapsedTime = 0; // Reset time
+            saveTodoCategories(); // Save reset state
+            renderTodoCategories(); // Re-render to update display
+        }
+
         // Function to toggle sub-task completion status
         function toggleSubTaskComplete(categoryId, subTaskId) {
             const category = todoCategories.find(cat => cat.id === categoryId);
@@ -887,12 +920,31 @@
             renderTodoCategories();
         }
 
-        // --- Trac Tab Logic (Redesigned) ---
+        // --- Trac Tab Logic ---
         const LOCAL_STORAGE_TRAC_KEY = 'tracData';
         let tracData = {
             bio: [],
             chem: [],
-            phys: []
+            phys: [],
+            // Default column names, can be overridden by user edits
+            customColumnNames: {
+                lec: 'Lec',
+                dpp: 'DPP',
+                module: 'Module',
+                neetPyq: 'NEET PYQ',
+                jeePyq: 'JEE PYQ',
+                referenceBook: 'REF BOOK',
+                mainsLvl: 'MAINS LVL',
+                ncert: 'NCERT',
+                pitaraLtl: 'PITARA (LTL)',
+                infinityPractice: 'INFINITY PRACTISE',
+                prepMeter: 'PREP METER',
+                revision1: 'R1',
+                revision2: 'R2',
+                revision3: 'R3',
+                revision4: 'R4',
+                revision5: 'R5'
+            }
         };
 
         const tracBioSubTab = document.getElementById('tracBioSubTab');
@@ -944,13 +996,26 @@
         function loadTracData() {
             const storedTracData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_TRAC_KEY));
             if (storedTracData) {
-                tracData = storedTracData;
+                // Merge stored custom column names with defaults to handle new columns
+                tracData = {
+                    ...tracData, // Keep default structure
+                    ...storedTracData, // Overwrite with stored data
+                    customColumnNames: {
+                        ...tracData.customColumnNames, // Keep default column names
+                        ...(storedTracData.customColumnNames || {}) // Overwrite with stored custom names if available
+                    }
+                };
             }
         }
 
         function saveTracData() {
             localStorage.setItem(LOCAL_STORAGE_TRAC_KEY, JSON.stringify(tracData));
             console.log('Trac data saved locally.');
+        }
+
+        function updateCustomColumnName(key, newName) {
+            tracData.customColumnNames[key] = newName;
+            saveTracData();
         }
 
         function renderTracChapters(subject) {
@@ -978,34 +1043,37 @@
 
             const table = document.createElement('table');
             table.className = 'trac-table';
-            table.innerHTML = `
+
+            // Dynamically create table headers based on customColumnNames
+            let headerRow1 = `
                 <thead>
                     <tr>
                         <th rowspan="2">Chapter Name</th>
-                        <th rowspan="2">Lec</th>
-                        <th rowspan="2">DPP</th>
-                        <th rowspan="2">Module</th>
-                        <th rowspan="2">NEET PYQ</th>
-                        <th rowspan="2">JEE PYQ</th>
-                        <th rowspan="2">REF BOOK</th>
-                        <th rowspan="2">MAINS LVL</th>
-                        <th rowspan="2">NCERT</th>
-                        <th rowspan="2">PITARA (LTL)</th>
-                        <th rowspan="2">INFINITY PRACTISE</th>
-                        <th rowspan="2">PREP METER</th>
-                        <th colspan="5">REVISION</th> <!-- Combined Revision header -->
+                        <th rowspan="2" contenteditable="true" data-column-key="lec">${tracData.customColumnNames.lec}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="dpp">${tracData.customColumnNames.dpp}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="module">${tracData.customColumnNames.module}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="neetPyq">${tracData.customColumnNames.neetPyq}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="jeePyq">${tracData.customColumnNames.jeePyq}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="referenceBook">${tracData.customColumnNames.referenceBook}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="mainsLvl">${tracData.customColumnNames.mainsLvl}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="ncert">${tracData.customColumnNames.ncert}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="pitaraLtl">${tracData.customColumnNames.pitaraLtl}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="infinityPractice">${tracData.customColumnNames.infinityPractice}</th>
+                        <th rowspan="2" contenteditable="true" data-column-key="prepMeter">${tracData.customColumnNames.prepMeter}</th>
+                        <th colspan="5">REVISION</th>
                         <th rowspan="2">Actions</th>
                     </tr>
                     <tr>
-                        <th>R1</th>
-                        <th>R2</th>
-                        <th>R3</th>
-                        <th>R4</th>
-                        <th>R5</th>
+                        <th contenteditable="true" data-column-key="revision1">${tracData.customColumnNames.revision1}</th>
+                        <th contenteditable="true" data-column-key="revision2">${tracData.customColumnNames.revision2}</th>
+                        <th contenteditable="true" data-column-key="revision3">${tracData.customColumnNames.revision3}</th>
+                        <th contenteditable="true" data-column-key="revision4">${tracData.customColumnNames.revision4}</th>
+                        <th contenteditable="true" data-column-key="revision5">${tracData.customColumnNames.revision5}</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             `;
+            table.innerHTML = headerRow1;
             const tbody = table.querySelector('tbody');
 
             chaptersArray.forEach(chapter => {
@@ -1037,6 +1105,28 @@
             });
 
             targetDiv.appendChild(table);
+
+            // Add event listeners for editable column headers
+            table.querySelectorAll('th[contenteditable="true"]').forEach(th => {
+                th.addEventListener('blur', (event) => {
+                    const columnKey = event.target.dataset.columnKey;
+                    const newName = event.target.textContent.trim();
+                    if (columnKey && newName) {
+                        updateCustomColumnName(columnKey, newName);
+                    } else {
+                        // Revert to previous name if empty
+                        event.target.textContent = tracData.customColumnNames[columnKey];
+                    }
+                });
+                // Prevent new lines in editable headers
+                th.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        event.target.blur(); // Trigger blur to save changes
+                    }
+                });
+            });
+
 
             tbody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 checkbox.addEventListener('change', (event) => {

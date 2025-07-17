@@ -3,1062 +3,832 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEET 2026 Daily Study Companion</title>
-    <!-- Tailwind CSS CDN for styling -->
+    <title>Daily Tracker & To-Do List</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom font for better readability */
+        /* Base styles for a modern look */
         body {
-            font-family: "Inter", sans-serif;
-            background-color: #f0f4f8; /* Light background */
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better content flow */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        /* Styling for the custom checkbox appearance */
-        input[type="checkbox"] {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            width: 24px;
-            height: 24px;
-            border: 2px solid #6366f1; /* Indigo 500 */
-            border-radius: 6px; /* Rounded corners */
-            position: relative;
-            cursor: pointer;
-            outline: none;
-            transition: background-color 0.2s, border-color 0.2s;
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08); /* Stronger, softer shadow */
+            width: 100%;
+            max-width: 900px; /* Max width for desktop */
+            overflow: hidden; /* Ensures rounded corners apply to children */
+            display: flex;
+            flex-direction: column;
         }
-        input[type="checkbox"]:checked {
-            background-color: #6366f1; /* Indigo 500 */
-            border-color: #6366f1; /* Indigo 500 */
-        }
-        input[type="checkbox"]:checked::after {
-            content: '✓'; /* Checkmark symbol */
-            color: white;
-            font-size: 16px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-weight: bold;
-        }
-        /* Style for the text areas to allow vertical resizing and auto-height */
-        textarea {
-            resize: vertical; /* Allow vertical resizing */
-            min-height: 40px; /* Minimum height */
-            height: auto; /* Auto height based on content */
-            overflow-y: hidden; /* Hide scrollbar initially */
-        }
-
-        /* Tab button styling */
+        /* Tab Styling */
         .tab-button {
-            padding: 10px 20px;
-            border-bottom: 3px solid transparent;
+            padding: 1rem 1.5rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            border-bottom: 3px solid transparent; /* For active indicator */
             color: #6b7280; /* Gray 500 */
         }
         .tab-button.active {
-            border-color: #6366f1; /* Indigo 500 */
-            color: #4338ca; /* Indigo 700 */
-        }
-        .tab-button:hover:not(.active) {
             color: #4f46e5; /* Indigo 600 */
+            border-color: #4f46e5;
+            /* background-color: #eef2ff; /* Removed background for cleaner look */
+        }
+        .tab-button:not(.active):hover {
+            background-color: #f8fafc; /* Lighter hover for tabs */
+        }
+        .sub-tab-button {
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            font-size: 0.9rem;
+            color: #6b7280; /* Gray 500 */
+        }
+        .sub-tab-button.active {
+            color: #1d4ed8; /* Blue 700 */
+            border-color: #1d4ed8;
+            /* background-color: #eff6ff; /* Removed background for cleaner look */
+        }
+        .sub-tab-button:not(.active):hover {
+            background-color: #eef2ff; /* Light blue hover */
         }
 
-        /* Timer input styling (for setting time) */
-        .timer-set-input {
-            width: 60px;
-            text-align: center;
-            font-size: 1.25rem;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-            padding: 6px;
-            margin: 0 5px;
-            background-color: #f9fafb;
-            color: #333;
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+            overflow-y: auto; /* Enable scrolling for long content */
+            max-height: calc(100vh - 150px); /* Adjust based on header/footer height */
         }
-        .timer-set-input:focus {
+        .tab-content.active {
+            display: block;
+        }
+        .trac-sub-content {
+            display: none; /* Hidden by default */
+        }
+        .trac-sub-content.active {
+            display: block; /* Shown when active */
+        }
+
+        /* Style for editable time/text areas */
+        .editable-time, .editable-text, .editable-task-name, .editable-chapter-name {
+            border: 1px solid #e5e7eb; /* Gray 200 */
+            border-radius: 0.75rem; /* More rounded */
+            padding: 0.75rem 1rem; /* More padding */
             outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            transition: all 0.2s ease;
+            min-height: 48px; /* Ensure consistent height */
+            box-sizing: border-box;
+            background-color: #f9fafb; /* Light gray background */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+        }
+        .editable-time:focus, .editable-text:focus, .editable-task-name:focus, .editable-chapter-name:focus {
+            border-color: #a5b4fc; /* Light indigo 300 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); /* Lighter focus ring */
+            background-color: #ffffff;
         }
 
-        /* Modern Timer Display (Canvas Container) */
-        .modern-timer-container {
-            position: relative;
-            width: 250px; /* Fixed size for the circle */
-            height: 250px;
-            margin: 0 auto 2rem;
+        /* Daily Tracker Grid (New UI) */
+        .daily-tracker-grid {
             display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* Smaller gap between rows */
+        }
+        .daily-tracker-row {
+            display: flex;
+            background-color: #ffffff;
+            border-radius: 0.75rem; /* Rounded corners for each row */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Soft shadow for each row */
+            overflow: hidden; /* Ensure rounded corners apply */
+        }
+        .daily-tracker-time {
+            flex-shrink: 0; /* Prevent shrinking */
+            width: 100px; /* Fixed width for time */
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            font-weight: 600;
+            color: #4b5563; /* Gray 700 */
+            background-color: #f8fafc; /* Very light background for time */
+            border-right: 1px solid #e5e7eb;
+            border-radius: 0.75rem 0 0 0.75rem; /* Rounded only on left side */
+        }
+        .daily-tracker-activity {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border: none; /* Remove default textarea border */
+            outline: none;
+            resize: none; /* Disable textarea resize handle */
+            background-color: transparent; /* Match parent background */
+            font-size: 1rem;
+            color: #374151;
+            line-height: 1.5;
+        }
+        .daily-tracker-activity::placeholder {
+            color: #9ca3af; /* Gray 400 */
+        }
+
+
+        /* To-Do List specific styles (Modernized further) */
+        .todo-section {
+            background-color: #ffffff;
+            border-radius: 1rem; /* More rounded */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Slightly stronger shadow */
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+        .todo-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .todo-section-title {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            color: #1f2937; /* Gray 900 */
+            display: flex;
             align-items: center;
         }
-
-        .modern-timer-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        .todo-section-title svg {
+            margin-right: 0.5rem;
+            color: #f59e0b; /* Amber 500 */
+        }
+        .todo-section-timer {
+            font-family: 'Inter', monospace;
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 500;
+            color: #374151; /* Gray 700 */
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.25rem;
+            margin-left: 1.5rem; /* Indent for sub-tasks */
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        .todo-item:hover {
+            background-color: #f9fafb;
+        }
+        .todo-item.completed .editable-task-name {
+            text-decoration: line-through;
+            color: #9ca3af; /* Gray 400 */
+        }
+        .todo-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            height: 1.125rem; /* 18px */
+            width: 1.125rem; /* 18px */
+            border-radius: 50%; /* Circular checkbox */
+            border: 1px solid #d1d5db; /* Gray 300 */
+            accent-color: #4f46e5; /* Indigo for checked state */
+            cursor: pointer;
+            flex-shrink: 0; /* Prevent checkbox from shrinking */
+        }
+        .todo-item input[type="checkbox"]:checked {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+        .todo-item .editable-task-name {
+            background-color: transparent; /* No background for input */
+            border: none;
+            padding: 0;
+            font-size: 1rem;
+            font-weight: 400;
+            color: #374151; /* Gray 700 */
+            flex-grow: 1;
+        }
+        .todo-item .editable-task-name:focus {
+            box-shadow: none;
+            border-color: transparent;
         }
 
-        .modern-timer-text {
-            position: relative; /* To be above canvas */
-            font-size: 3.5rem; /* Large text for time */
-            font-weight: 800;
-            color: #4338ca;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        .todo-item-actions {
+            display: flex;
+            gap: 0.25rem; /* Smaller gap for compact buttons */
+            margin-left: auto;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.2s ease;
+        }
+        .todo-item:hover .todo-item-actions {
+            opacity: 1; /* Show on hover */
+        }
+        .action-button {
+            padding: 0.3rem; /* Smaller padding */
+            border-radius: 0.375rem; /* Slightly less rounded */
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-button svg {
+            width: 1rem; /* Smaller icons */
+            height: 1rem;
+        }
+
+        /* Specific button colors (retained) */
+        .start-button {
+            background-color: #d1fae5; color: #059669;
+        }
+        .start-button:hover { background-color: #a7f3d0; }
+        .stop-button {
+            background-color: #fffbeb; color: #f59e0b;
+        }
+        .stop-button:hover { background-color: #fef3c7; }
+        .reset-button {
+            background-color: #fee2e2; color: #ef4444;
+        }
+        .reset-button:hover { background-color: #fecaca; }
+        .delete-button {
+            background-color: #e0e7ff; color: #4f46e5;
+        }
+        .delete-button:hover { background-color: #c7d2fe; }
+
+        /* Trac Tab Specific Styles (retained) */
+        .trac-table-container {
+            overflow-x: auto; /* Enable horizontal scrolling for wide tables */
+            margin-top: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .trac-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px; /* Minimum width to prevent excessive squishing */
+        }
+        .trac-table th, .trac-table td {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            text-align: left;
+            white-space: nowrap; /* Prevent text wrapping in headers */
+        }
+        .trac-table th {
+            background-color: #f3f4f6; /* Gray 100 */
+            font-weight: 600;
+            color: #374151; /* Gray 700 */
+            position: sticky;
+            top: 0;
             z-index: 10;
         }
-
-        /* Modern Button Styles */
-        .modern-button {
-            padding: 0.8rem 2rem;
-            border-radius: 9999px; /* Fully rounded */
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Soft shadow */
-            transition: all 0.3s ease;
-            background-size: 200% auto; /* For gradient animation */
+        .trac-table td {
+            background-color: #ffffff;
+        }
+        .trac-table td:first-child { /* Chapter Name column */
+            width: 200px; /* Fixed width for chapter name */
+            min-width: 150px;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .trac-table input[type="checkbox"] {
+            margin: 0 auto; /* Center checkboxes */
+            display: block;
+            width: 1.25rem; /* 20px */
+            height: 1.25rem; /* 20px */
+            border-radius: 0.25rem;
+            border: 1px solid #9ca3af; /* Gray 400 */
+            accent-color: #4f46e5; /* Indigo for checked state */
+            cursor: pointer;
+        }
+        .trac-table .chapter-name-cell {
+            font-weight: 500;
+            color: #1f2937; /* Gray 900 */
+        }
+        .trac-table .chapter-name-cell:focus {
+            outline: none;
+            background-color: #eef2ff;
+            border-radius: 0.25rem;
+        }
+        .revision-checkbox-group {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            gap: 0.25rem; /* Small gap between checkboxes */
+            justify-content: center; /* Center the group */
+        }
+        .revision-checkbox-group input[type="checkbox"] {
+            margin: 0; /* Remove default margin */
         }
 
-        .modern-button:hover {
-            background-position: right center; /* Move gradient on hover */
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05); /* Larger shadow on hover */
-            transform: translateY(-2px); /* Slight lift */
-        }
 
-        .modern-button.start {
-            background-image: linear-gradient(to right, #10b981 0%, #059669 50%, #10b981 100%); /* Green gradient */
-            color: white;
-        }
-        .modern-button.pause {
-            background-image: linear-gradient(to right, #f59e0b 0%, #d97706 50%, #f59e0b 100%); /* Yellow/orange gradient */
-            color: white;
-        }
-        .modern-button.reset {
-            background-image: linear-gradient(to right, #ef4444 0%, #dc2626 50%, #ef4444 100%); /* Red gradient */
-            color: white;
-        }
-
-        .modern-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        /* Progress Chart Styling */
-        .progress-chart-container {
-            position: relative;
-            width: 100%;
-            height: 350px; /* Fixed height for chart */
-            margin-bottom: 1.5rem;
-        }
-        .progress-chart-canvas {
-            width: 100%;
-            height: 100%;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                max-width: 100%;
+            }
+            .tab-button {
+                padding: 0.75rem 0.75rem;
+                font-size: 0.85rem;
+            }
+            .sub-tab-button {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            .tab-content {
+                padding: 1rem;
+            }
+            .daily-tracker-grid {
+                gap: 0.5rem; /* Even smaller gap on mobile */
+            }
+            .daily-tracker-time {
+                width: 80px; /* Adjust time column width for smaller screens */
+                padding: 0.5rem 0.75rem;
+            }
+            .daily-tracker-activity {
+                padding: 0.5rem 0.75rem;
+            }
+            .todo-item {
+                flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            }
+            .todo-item-actions {
+                margin-top: 0.5rem;
+                margin-left: 0; /* Remove auto-margin to stack below */
+                width: 100%; /* Take full width */
+                justify-content: flex-end; /* Align buttons to the right */
+            }
+            .trac-table th, .trac-table td {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            .trac-table td:first-child {
+                width: 120px; /* Smaller fixed width for chapter name on mobile */
+                min-width: 100px;
+            }
         }
     </style>
 </head>
-<body class="p-4 sm:p-6 md:p-8 lg:p-10 bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="container mx-auto bg-white shadow-lg rounded-xl p-6 sm:p-8 md:p-10 max-w-4xl w-full">
-        <h1 class="text-3xl sm:text-4xl font-bold text-center text-indigo-700 mb-8">Your Daily NEET 2026 Study Companion</h1>
-
+<body class="bg-gray-100 flex justify-center items-start min-h-screen p-4">
+    <div class="container bg-white rounded-xl shadow-lg">
         <!-- Tab Navigation -->
-        <div class="flex justify-center mb-6 border-b border-gray-200">
-            <button id="checklistTabBtn" class="tab-button active">Checklist</button>
-            <button id="timerTabBtn" class="tab-button">Timer</button>
-            <button id="progressTabBtn" class="tab-button">Progress</button>
+        <div class="flex border-b border-gray-200">
+            <button id="dailyTrackerTab" class="tab-button flex-1 text-center rounded-tl-xl">Daily Tracker</button>
+            <button id="todoListTab" class="tab-button flex-1 text-center">To-Do List</button>
+            <button id="tracTab" class="tab-button flex-1 text-center rounded-tr-xl">Trac</button>
         </div>
 
-        <!-- Checklist Section -->
-        <div id="checklistSection" class="tab-content">
-            <div class="mb-10">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b-2 border-indigo-300 pb-2">Daily Study Tasks</h2>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
-                        <thead class="bg-indigo-100">
-                            <tr>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider rounded-tl-lg">Category</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Task Description</th>
-                                <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider">Status</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Notes / Topics Covered</th>
-                                <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider rounded-tr-lg">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200" id="studyTasksTableBody">
-                            <!-- Tasks will be dynamically loaded here -->
-                        </tbody>
-                    </table>
+        <!-- Daily Tracker Content -->
+        <div id="dailyTrackerContent" class="tab-content active">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Daily Happenings</h2>
+            <div id="dailyTrackerGrid" class="daily-tracker-grid">
+                <!-- Daily tracker entries will be generated here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- To-Do List Content -->
+        <div id="todoListContent" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">My To-Do List</h2>
+            <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                <input type="text" id="newTaskInput" placeholder="Add a new main task..."
+                       class="flex-grow editable-task-name px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 transition duration-200">
+                <button id="addTaskButton"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+                    Add Task
+                </button>
+            </div>
+            <div id="todoList" class="space-y-4">
+                <!-- To-Do items will be generated here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Trac Content -->
+        <div id="tracContent" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">My Study Tracker</h2>
+            <!-- Sub-tab Navigation for Trac -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="bioSubTab" class="sub-tab-button active flex-1 text-center">Biology</button>
+                <button id="chemSubTab" class="sub-tab-button flex-1 text-center">Chemistry</button>
+                <button id="physSubTab" class="sub-tab-button flex-1 text-center">Physics</button>
+            </div>
+
+            <!-- Biology Content -->
+            <div id="bioContent" class="trac-sub-content active">
+                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                    <input type="text" id="newBioChapterInput" placeholder="Add Biology Chapter Name..."
+                           class="flex-grow editable-chapter-name px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition duration-200">
+                    <button id="addBioChapterButton"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm transition duration-200">
+                        Add Chapter
+                    </button>
+                </div>
+                <div id="bioTableContainer" class="trac-table-container">
+                    <!-- Biology table will be generated here by JavaScript -->
                 </div>
             </div>
 
-            <div>
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b-2 border-indigo-300 pb-2">End of Day Activities</h2>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
-                        <thead class="bg-indigo-100">
-                            <tr>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider rounded-tl-lg">Category</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Task Description</th>
-                                <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider">Status</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Notes / Reflection</th>
-                                <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider rounded-tr-lg">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200" id="endOfDayTasksTableBody">
-                            <!-- Tasks will be dynamically loaded here -->
-                        </tbody>
-                    </table>
+            <!-- Chemistry Content -->
+            <div id="chemContent" class="trac-sub-content">
+                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                    <input type="text" id="newChemChapterInput" placeholder="Add Chemistry Chapter Name..."
+                           class="flex-grow editable-chapter-name px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition duration-200">
+                    <button id="addChemChapterButton"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm transition duration-200">
+                        Add Chapter
+                    </button>
+                </div>
+                <div id="chemTableContainer" class="trac-table-container">
+                    <!-- Chemistry table will be generated here by JavaScript -->
                 </div>
             </div>
 
-            <!-- New Add Task UI -->
-            <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 p-4 bg-gray-50 rounded-lg shadow-inner">
-                <label for="newTaskCategory" class="text-gray-700 font-medium whitespace-nowrap">Add New Task:</label>
-                <select id="newTaskCategory" class="flex-grow sm:flex-grow-0 border rounded-md p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="Physics">Physics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Biology">Biology</option>
-                    <option value="Self-Test">Self-Test</option>
-                    <option value="Prouds">Prouds</option>
-                    <option value="Regrets">Regrets</option>
-                    <option value="Improvement Needed?">Improvement Needed?</option>
-                    <option value="Other Study Task">Other Study Task</option>
-                    <option value="Other End of Day Activity">Other End of Day Activity</option>
-                </select>
-                <button id="addNewTaskBtn" class="modern-button start px-4 py-2 text-sm"><i class="fas fa-plus"></i> Add Task</button>
+            <!-- Physics Content -->
+            <div id="physContent" class="trac-sub-content">
+                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                    <input type="text" id="newPhysChapterInput" placeholder="Add Physics Chapter Name..."
+                           class="flex-grow editable-chapter-name px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition duration-200">
+                    <button id="addPhysChapterButton"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm transition duration-200">
+                        Add Chapter
+                    </button>
+                </div>
+                <div id="physTableContainer" class="trac-table-container">
+                    <!-- Physics table will be generated here by JavaScript -->
+                </div>
             </div>
 
-            <p class="text-center text-gray-600 text-sm mt-8">
-                **How to use the Status column:** Click the checkbox next to each task to mark it as completed (✓) or uncompleted (empty).
-            </p>
-        </div>
-
-        <!-- Timer Section -->
-        <div id="timerSection" class="tab-content hidden p-6 text-center bg-gradient-to-br from-indigo-50 to-blue-100 rounded-lg shadow-xl">
-            <h2 class="text-3xl font-extrabold text-indigo-800 mb-8">Study Timer</h2>
-
-            <div class="flex justify-center items-center mb-6">
-                <input type="number" id="minutesInput" class="timer-set-input" value="25" min="0" max="99">
-                <span class="text-2xl font-bold mx-1 text-indigo-700">:</span>
-                <input type="number" id="secondsInput" class="timer-set-input" value="00" min="0" max="59">
-            </div>
-
-            <div class="modern-timer-container">
-                <canvas id="timerCanvas" class="modern-timer-canvas"></canvas>
-                <div id="timerDisplay" class="modern-timer-text">25:00</div>
-            </div>
-
-            <div class="flex justify-center space-x-6">
-                <button id="startTimerBtn" class="modern-button start"><i class="fas fa-play"></i> Start</button>
-                <button id="pauseTimerBtn" class="modern-button pause" disabled><i class="fas fa-pause"></i> Pause</button>
-                <button id="resetTimerBtn" class="modern-button reset" disabled><i class="fas fa-redo"></i> Reset</button>
-            </div>
-        </div>
-
-        <!-- Progress Section -->
-        <div id="progressSection" class="tab-content hidden p-6 text-center bg-gradient-to-br from-purple-50 to-pink-100 rounded-lg shadow-xl">
-            <h2 class="text-3xl font-extrabold text-purple-800 mb-6">Progress Tracker</h2>
-
-            <!-- Progress Tab Navigation -->
-            <div class="flex justify-center mb-6 border-b border-gray-200">
-                <button id="dailyProgressTabBtn" class="tab-button active">Daily</button>
-                <button id="weeklyProgressTabBtn" class="tab-button">Weekly</button>
-                <button id="monthlyProgressTabBtn" class="tab-button">Monthly</button>
-            </div>
-
-            <div class="progress-chart-container">
-                <canvas id="progressChart" class="progress-chart-canvas bg-white rounded-lg shadow-md p-4"></canvas>
-            </div>
-            <button id="clearProgressHistoryBtn" class="modern-button reset bg-red-600 hover:bg-red-700 text-white"><i class="fas fa-trash-alt"></i> Clear Progress History</button>
         </div>
     </div>
 
     <script>
-        // --- Constants for Local Storage Keys ---
-        const CHECKLIST_STORAGE_KEY = 'neetChecklistState';
-        const LAST_RESET_DATE_KEY = 'neetLastResetDate';
-        const DAILY_PROGRESS_KEY = 'neetDailyProgress';
-        const TIMER_STORAGE_KEY = 'neetTimerState';
-
-        // --- Default Checklist Template ---
-        // This template is used only if no checklist data is found in localStorage
-        const DEFAULT_CHECKLIST_TEMPLATE = [
-            { section: 'study', subject: 'Physics', description: 'Lec and notes together', taskId: 'physics-lec-notes' },
-            { section: 'study', subject: 'Physics', description: 'Revise notes and practise class questions again', taskId: 'physics-revise-class-qs' },
-            { section: 'study', subject: 'Physics', description: 'DPP and Module', taskId: 'physics-dpp-module' },
-            { section: 'study', subject: 'Physics', description: 'KPP and Extra Book questions', taskId: 'physics-kpp-extra-book' },
-            { section: 'study', subject: 'Physics', description: 'MahaManthan Assignment (if given) and HCV lookup', taskId: 'physics-mahamanthan-hcv' },
-            { section: 'study', subject: 'Chemistry', description: 'Lec and notes together', taskId: 'chemistry-lec-notes' },
-            { section: 'study', subject: 'Chemistry', description: 'Revise notes, Read NCERT and practise class questions again', taskId: 'chemistry-revise-ncert-class-qs' },
-            { section: 'study', subject: 'Chemistry', description: 'DPP and Module', taskId: 'chemistry-dpp-module' },
-            { section: 'study', subject: 'Chemistry', description: 'Extra Book questions', taskId: 'chemistry-extra-book' },
-            { section: 'study', subject: 'Chemistry', description: 'High Level Question atleast 2/3 per day', taskId: 'chemistry-high-level-qs' },
-            { section: 'study', subject: 'Biology', description: 'Lec and notes together', taskId: 'biology-lec-notes' },
-            { section: 'study', subject: 'Biology', description: 'Revise notes, Read NCERT and practise class questions again', taskId: 'biology-revise-ncert-class-qs' },
-            { section: 'study', subject: 'Biology', description: 'DPP and Module', taskId: 'biology-dpp-module' },
-            { section: 'study', subject: 'Biology', description: 'Extra Book questions', taskId: 'biology-extra-book' },
-            { section: 'study', subject: 'Biology', description: 'NCERT word to Word / Line to Line Questions', taskId: 'biology-ncert-word-to-word' },
-            { section: 'endOfDay', subject: 'Self-Test', description: 'Small test of previous days topics (9:00 PM - 10:00 PM)', taskId: 'self-test' },
-            { section: 'endOfDay', subject: 'Prouds', description: '', taskId: 'sum-up-prouds' },
-            { section: 'endOfDay', subject: 'Regrets', description: '', taskId: 'sum-up-regrets' },
-            { section: 'endOfDay', subject: 'Improvement Needed?', description: '', taskId: 'sum-up-improvement' }
-        ];
-
-        // --- Common Functions ---
-
-        // Auto-resize textareas based on content
-        function setupTextareaAutoResize(textarea) {
-            textarea.addEventListener('input', () => {
-                textarea.style.height = 'auto';
-                textarea.style.height = (textarea.scrollHeight) + 'px';
-                saveChecklistState(); // Save state on textarea input
-            });
-            // Initial resize in case content is pre-filled
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
-        }
-
-        // --- Tab Switching Logic ---
-        const checklistTabBtn = document.getElementById('checklistTabBtn');
-        const timerTabBtn = document.getElementById('timerTabBtn');
-        const progressTabBtn = document.getElementById('progressTabBtn');
-        const checklistSection = document.getElementById('checklistSection');
-        const timerSection = document.getElementById('timerSection');
-        const progressSection = document.getElementById('progressSection');
-
-        const dailyProgressTabBtn = document.getElementById('dailyProgressTabBtn');
-        const weeklyProgressTabBtn = document.getElementById('weeklyProgressTabBtn');
-        const monthlyProgressTabBtn = document.getElementById('monthlyProgressTabBtn');
-
-        let currentProgressView = 'daily'; // Default progress view
-
-        function showTab(tabName) {
-            // Hide all sections
-            checklistSection.classList.add('hidden');
-            timerSection.classList.add('hidden');
-            progressSection.classList.add('hidden');
-
-            // Deactivate all main tab buttons
-            checklistTabBtn.classList.remove('active');
-            timerTabBtn.classList.remove('active');
-            progressTabBtn.classList.remove('active');
-
-            // Show the selected section and activate its button
-            if (tabName === 'checklist') {
-                checklistSection.classList.remove('hidden');
-                checklistTabBtn.classList.add('active');
-            } else if (tabName === 'timer') {
-                timerSection.classList.remove('hidden');
-                timerTabBtn.classList.add('active');
-                // Ensure timer canvas is drawn when tab is active
-                drawTimerCircle(timerCtx, timeRemaining, initialMinutes * 60 + initialSeconds);
-            } else if (tabName === 'progress') {
-                progressSection.classList.remove('hidden');
-                progressTabBtn.classList.add('active');
-                showProgressView(currentProgressView); // Render chart for current view
-            }
-        }
-
-        function showProgressView(view) {
-            currentProgressView = view;
-            dailyProgressTabBtn.classList.remove('active');
-            weeklyProgressTabBtn.classList.remove('active');
-            monthlyProgressTabBtn.classList.remove('active');
-
-            if (view === 'daily') {
-                dailyProgressTabBtn.classList.add('active');
-            } else if (view === 'weekly') {
-                weeklyProgressTabBtn.classList.add('active');
-            } else if (view === 'monthly') {
-                monthlyProgressTabBtn.classList.add('active');
-            }
-            renderProgressChart(currentProgressView);
-        }
-
-        checklistTabBtn.addEventListener('click', () => showTab('checklist'));
-        timerTabBtn.addEventListener('click', () => showTab('timer'));
-        progressTabBtn.addEventListener('click', () => showTab('progress'));
-
-        dailyProgressTabBtn.addEventListener('click', () => showProgressView('daily'));
-        weeklyProgressTabBtn.addEventListener('click', () => showProgressView('weekly'));
-        monthlyProgressTabBtn.addEventListener('click', () => showProgressView('monthly'));
-
-        // --- Checklist Logic (with Local Storage and Daily Reset) ---
-
-        // Function to create a new task row HTML element
-        function createTaskRow(taskData) {
-            const row = document.createElement('tr');
-            row.dataset.taskId = taskData.taskId;
-            row.dataset.section = taskData.section; // Store section (study/endOfDay)
-            row.dataset.subject = taskData.subject; // Store subject (Physics, Self-Test, etc.)
-
-            // Determine the initial description placeholder/value
-            let descriptionValue = taskData.description || '';
-            let placeholderText = 'Task Description';
-
-            if (taskData.subject === 'Prouds' || taskData.subject === 'Regrets' || taskData.subject === 'Improvement Needed?') {
-                placeholderText = taskData.subject; // Use subject as placeholder for these
-            } else if (taskData.subject === 'Self-Test') {
-                placeholderText = 'Topics tested:';
-            }
-
-
-            row.innerHTML = `
-                <td class="px-3 py-4 whitespace-nowrap font-semibold text-indigo-600">${taskData.subject}</td>
-                <td class="px-3 py-4">
-                    <textarea class="w-full border rounded-md p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 task-description-input" placeholder="${placeholderText}">${descriptionValue}</textarea>
-                </td>
-                <td class="px-3 py-4 text-center"><input type="checkbox" class="task-checkbox rounded-md"></td>
-                <td class="px-3 py-4">
-                    <textarea class="w-full border rounded-md p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 task-notes-input" placeholder="Notes">${taskData.notes || ''}</textarea>
-                </td>
-                <td class="px-3 py-4 text-center">
-                    <button class="remove-task-btn bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-md text-sm rounded-full"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
-
-            // Set checkbox state
-            const checkbox = row.querySelector('.task-checkbox');
-            if (checkbox) {
-                checkbox.checked = taskData.checked || false;
-                checkbox.addEventListener('change', saveChecklistState);
-            }
-
-            // Setup auto-resize and save for notes textarea
-            const notesTextarea = row.querySelector('.task-notes-input');
-            if (notesTextarea) {
-                setupTextareaAutoResize(notesTextarea);
-            }
-
-            // Setup auto-resize and save for description textarea
-            const descriptionTextarea = row.querySelector('.task-description-input');
-            if (descriptionTextarea) {
-                setupTextareaAutoResize(descriptionTextarea);
-                descriptionTextarea.addEventListener('input', saveChecklistState); // Save on description change
-            }
-
-            // Add remove button functionality
-            const removeButton = row.querySelector('.remove-task-btn');
-            if (removeButton) {
-                removeButton.addEventListener('click', () => {
-                    if (confirm('Are you sure you want to remove this task?')) {
-                        row.remove();
-                        saveChecklistState(); // Save state after removing
-                    }
-                });
-            }
-
-            return row;
-        }
-
-        // Function to add a new task (triggered by "Add Task" button)
-        const newTaskCategorySelect = document.getElementById('newTaskCategory');
-        const addNewTaskBtn = document.getElementById('addNewTaskBtn');
-
-        addNewTaskBtn.addEventListener('click', () => {
-            const selectedSubject = newTaskCategorySelect.value;
-            const newTaskId = `custom-task-${Date.now()}`; // Unique ID for new tasks
-
-            let section = 'study'; // Default section
-            // Determine section based on selected subject
-            if (['Self-Test', 'Prouds', 'Regrets', 'Improvement Needed?', 'Other End of Day Activity'].includes(selectedSubject)) {
-                section = 'endOfDay';
-            }
-
-            const newTaskData = {
-                section: section,
-                subject: selectedSubject,
-                description: '', // Empty description for new tasks
-                taskId: newTaskId,
-                checked: false,
-                notes: ''
-            };
-            const newRow = createTaskRow(newTaskData);
-
-            if (section === 'study') {
-                document.getElementById('studyTasksTableBody').appendChild(newRow);
-            } else if (section === 'endOfDay') {
-                document.getElementById('endOfDayTasksTableBody').appendChild(newRow);
-            }
-            saveChecklistState(); // Save state after adding
-            newRow.querySelector('.task-description-input').focus(); // Focus on new task description
-        });
-
-
-        // Function to save the checklist state to localStorage
-        function saveChecklistState() {
-            const checklistState = {};
-            document.querySelectorAll('#studyTasksTableBody tr, #endOfDayTasksTableBody tr').forEach((row) => {
-                const taskId = row.dataset.taskId;
-                const section = row.dataset.section;
-                const subject = row.dataset.subject;
-                if (taskId && section && subject) {
-                    const checkbox = row.querySelector('.task-checkbox');
-                    const descriptionTextarea = row.querySelector('.task-description-input');
-                    const notesTextarea = row.querySelector('.task-notes-input');
-
-                    checklistState[taskId] = {
-                        section: section,
-                        subject: subject,
-                        description: descriptionTextarea ? descriptionTextarea.value : '',
-                        checked: checkbox ? checkbox.checked : false,
-                        notes: notesTextarea ? notesTextarea.value : ''
-                    };
-                }
-            });
-            localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checklistState));
-            // console.log("Checklist state saved to localStorage.");
-        }
-
-        // Function to record previous day's progress before resetting
-        function recordPreviousDayProgress(dateToRecord) {
-            const previousDayChecklistState = JSON.parse(localStorage.getItem(CHECKLIST_STORAGE_KEY) || '{}');
-            let completedTasks = 0;
-            let totalTasks = 0;
-
-            for (const taskId in previousDayChecklistState) {
-                totalTasks++; // Count all tasks in the saved state
-                if (previousDayChecklistState[taskId].checked) {
-                    completedTasks++;
-                }
-            }
-
-            // Get existing daily progress or initialize
-            const dailyProgress = JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY) || '{}');
-            
-            // Only record if there were tasks in the checklist for that day
-            if (totalTasks > 0) {
-                dailyProgress[dateToRecord] = {
-                    completed: completedTasks,
-                    total: totalTasks
-                };
-                localStorage.setItem(DAILY_PROGRESS_KEY, JSON.stringify(dailyProgress));
-                console.log(`Recorded progress for ${dateToRecord}: ${completedTasks}/${totalTasks} tasks completed.`);
-            } else {
-                console.log(`No tasks recorded for ${dateToRecord}. Skipping progress save.`);
-            }
-        }
-
-        // Function to load the checklist state from localStorage or default template
-        function loadChecklistState() {
-            const todayDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-            const lastResetDate = localStorage.getItem(LAST_RESET_DATE_KEY);
-
-            if (lastResetDate && lastResetDate !== todayDate) {
-                // It's a new day, record previous day's progress and then reset
-                recordPreviousDayProgress(lastResetDate);
-                localStorage.removeItem(CHECKLIST_STORAGE_KEY); // Clear previous day's checklist
-                localStorage.setItem(LAST_RESET_DATE_KEY, todayDate); // Set new reset date
-                console.log("Checklist reset for a new day and previous day's progress recorded.");
-            } else if (!lastResetDate) {
-                // First time loading, set the reset date
-                localStorage.setItem(LAST_RESET_DATE_KEY, todayDate);
-                console.log("First load, setting daily reset date.");
-            }
-
-            // Clear existing rows from the DOM before loading
-            document.getElementById('studyTasksTableBody').innerHTML = '';
-            document.getElementById('endOfDayTasksTableBody').innerHTML = '';
-
-            const savedState = localStorage.getItem(CHECKLIST_STORAGE_KEY);
-            let checklistData = {};
-
-            if (savedState) {
-                checklistData = JSON.parse(savedState);
-            } else {
-                // If no saved state, use the default template
-                DEFAULT_CHECKLIST_TEMPLATE.forEach(task => {
-                    checklistData[task.taskId] = { ...task, checked: false, notes: '' };
-                });
-            }
-
-            // Populate the checklist based on loaded or default data
-            for (const taskId in checklistData) {
-                const task = checklistData[taskId];
-                const newRow = createTaskRow(task);
-                if (task.section === 'study') {
-                    document.getElementById('studyTasksTableBody').appendChild(newRow);
-                } else if (task.section === 'endOfDay') {
-                    document.getElementById('endOfDayTasksTableBody').appendChild(newRow);
-                }
-            }
-            saveChecklistState(); // Ensure the current state (including default if no saved) is saved
-        }
-
-        // --- Timer Logic (with Local Storage and Circular UI) ---
-        const minutesInput = document.getElementById('minutesInput');
-        const secondsInput = document.getElementById('secondsInput');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const startTimerBtn = document.getElementById('startTimerBtn');
-        const pauseTimerBtn = document.getElementById('pauseTimerBtn');
-        const resetTimerBtn = document.getElementById('resetTimerBtn');
-        const timerCanvas = document.getElementById('timerCanvas');
-        const timerCtx = timerCanvas.getContext('2d');
-
-        let timerInterval;
-        let timeRemaining = 0; // in seconds
-        let isTimerRunning = false;
-        let initialMinutes = 25;
-        let initialSeconds = 0;
-        let totalTimerSeconds = 0; // Total seconds for the current timer session
-
-        // Audio context for sound
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        // Function to play a simple beep sound
-        function playAlarm() {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.frequency.value = 440; // A4 note
-            gainNode.gain.setValueAtTime(1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1); // Fade out
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 1);
-        }
-
-        function drawTimerCircle(ctx, currentSeconds, totalSeconds) {
-            // Ensure canvas dimensions are set before drawing
-            timerCanvas.width = timerCanvas.offsetWidth;
-            timerCanvas.height = timerCanvas.offsetHeight;
-
-            const centerX = timerCanvas.width / 2;
-            const centerY = timerCanvas.height / 2;
-            const radius = Math.min(centerX, centerY) - 10; // Adjust radius for padding
-
-            ctx.clearRect(0, 0, timerCanvas.width, timerCanvas.height);
-
-            // Background circle
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.strokeStyle = '#e2e8f0'; /* Gray 200 */
-            ctx.lineWidth = 10;
-            ctx.stroke();
-
-            // Progress arc
-            if (totalSeconds > 0) {
-                const startAngle = -Math.PI / 2; // Start from top
-                const endAngle = startAngle + (currentSeconds / totalSeconds) * (2 * Math.PI);
-
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.strokeStyle = '#6366f1'; /* Indigo 500 */
-                ctx.lineWidth = 10;
-                ctx.stroke();
-            }
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeRemaining / 60);
-            const seconds = timeRemaining % 60;
-            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.title = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} - Study Timer`;
-            drawTimerCircle(timerCtx, timeRemaining, totalTimerSeconds);
-        }
-
-        function saveTimerState() {
-            const timerState = {
-                timeRemaining: timeRemaining,
-                isTimerRunning: isTimerRunning,
-                initialMinutes: initialMinutes,
-                initialSeconds: initialSeconds,
-                totalTimerSeconds: totalTimerSeconds,
-                lastUpdated: Date.now() // Save timestamp for more accurate resume
-            };
-            localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(timerState));
-            // console.log("Timer state saved to localStorage.");
-        }
-
-        function loadTimerState() {
-            const savedState = localStorage.getItem(TIMER_STORAGE_KEY);
-            if (savedState) {
-                const timerState = JSON.parse(savedState);
-                initialMinutes = timerState.initialMinutes || 25;
-                initialSeconds = timerState.initialSeconds || 0;
-                totalTimerSeconds = timerState.totalTimerSeconds || (initialMinutes * 60 + initialSeconds);
-                isTimerRunning = timerState.isTimerRunning || false;
-                timeRemaining = timerState.timeRemaining || totalTimerSeconds;
-
-                minutesInput.value = initialMinutes.toString().padStart(2, '0');
-                secondsInput.value = initialSeconds.toString().padStart(2, '0');
-
-                if (isTimerRunning) {
-                    const timeElapsedSinceLastUpdate = Math.floor((Date.now() - timerState.lastUpdated) / 1000);
-                    timeRemaining = Math.max(0, timeRemaining - timeElapsedSinceLastUpdate);
-                    if (timeRemaining <= 0) {
-                        isTimerRunning = false; // Timer finished while app was closed
-                        playAlarm();
-                    }
-                }
-                updateTimerDisplay(); // Initial draw
-                if (isTimerRunning) {
-                    startTimer(); // Resume timer if it was running
-                }
-            } else {
-                // If no saved state, set initial values and draw
-                totalTimerSeconds = initialMinutes * 60 + initialSeconds;
-                timeRemaining = totalTimerSeconds;
-                updateTimerDisplay();
-            }
-            // Ensure buttons are correctly enabled/disabled on load
-            startTimerBtn.disabled = isTimerRunning || (timeRemaining <= 0 && totalTimerSeconds <= 0);
-            pauseTimerBtn.disabled = !isTimerRunning;
-            resetTimerBtn.disabled = isTimerRunning || (timeRemaining === totalTimerSeconds);
-            minutesInput.disabled = isTimerRunning;
-            secondsInput.disabled = isTimerRunning;
-        }
-
-        function startTimer() {
-            if (isTimerRunning) return;
-
-            // If timeRemaining is 0, set it from inputs
-            if (timeRemaining <= 0) {
-                initialMinutes = parseInt(minutesInput.value) || 0;
-                initialSeconds = parseInt(secondsInput.value) || 0;
-                totalTimerSeconds = initialMinutes * 60 + initialSeconds;
-                timeRemaining = totalTimerSeconds;
-                if (timeRemaining <= 0) {
-                    alert("Please set a valid time for the timer.");
-                    return;
-                }
-            }
-
-            isTimerRunning = true;
-            startTimerBtn.disabled = true;
-            pauseTimerBtn.disabled = false;
-            resetTimerBtn.disabled = false;
-            minutesInput.disabled = true;
-            secondsInput.disabled = true;
-
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                // Ensure timeRemaining does not go below 0
-                if (timeRemaining < 0) {
-                    timeRemaining = 0;
-                }
-                updateTimerDisplay();
-
-                if (timeRemaining === 0) { // Check for exact 0
-                    clearInterval(timerInterval);
-                    isTimerRunning = false;
-                    startTimerBtn.disabled = false;
-                    pauseTimerBtn.disabled = true;
-                    minutesInput.disabled = false;
-                    secondsInput.disabled = false;
-                    playAlarm();
-                    // updateTimerDisplay() already called just before this
-                    saveTimerState(); // Save final state
+        // DOM Elements
+        const dailyTrackerTab = document.getElementById('dailyTrackerTab');
+        const todoListTab = document.getElementById('todoListTab');
+        const tracTab = document.getElementById('tracTab');
+
+        const dailyTrackerContent = document.getElementById('dailyTrackerContent');
+        const todoListContent = document.getElementById('todoListContent');
+        const tracContent = document.getElementById('tracContent');
+
+        const dailyTrackerGrid = document.getElementById('dailyTrackerGrid');
+
+        const newTaskInput = document.getElementById('newTaskInput');
+        const addTaskButton = document.getElementById('addTaskButton');
+        const todoList = document.getElementById('todoList');
+
+        const bioSubTab = document.getElementById('bioSubTab');
+        const chemSubTab = document.getElementById('chemSubTab');
+        const physSubTab = document.getElementById('physSubTab');
+
+        const bioContent = document.getElementById('bioContent');
+        const chemContent = document.getElementById('chemContent');
+        const physContent = document.getElementById('physContent');
+
+        const newBioChapterInput = document.getElementById('newBioChapterInput');
+        const addBioChapterButton = document.getElementById('addBioChapterButton');
+        const bioTableContainer = document.getElementById('bioTableContainer');
+
+        const newChemChapterInput = document.getElementById('newChemChapterInput');
+        const addChemChapterButton = document.getElementById('addChemChapterButton');
+        const chemTableContainer = document.getElementById('chemTableContainer');
+
+        const newPhysChapterInput = document.getElementById('newPhysChapterInput');
+        const addPhysChapterButton = document.getElementById('addPhysChapterButton');
+        const physTableContainer = document.getElementById('physTableContainer');
+
+        // --- Tab Switching Logic (Main Tabs) ---
+        function switchTab(activeTabId) {
+            // Remove active class from all main tabs and content
+            dailyTrackerTab.classList.remove('active');
+            todoListTab.classList.remove('active');
+            tracTab.classList.remove('active');
+
+            dailyTrackerContent.classList.remove('active');
+            todoListContent.classList.remove('active');
+            tracContent.classList.remove('active');
+
+            // Add active class to the selected tab and content
+            if (activeTabId === 'dailyTrackerTab') {
+                dailyTrackerTab.classList.add('active');
+                dailyTrackerContent.classList.add('active');
+            } else if (activeTabId === 'todoListTab') {
+                todoListTab.classList.add('active');
+                todoListContent.classList.add('active');
+            } else if (activeTabId === 'tracTab') {
+                tracTab.classList.add('active');
+                tracContent.classList.add('active');
+                // When Trac tab is opened, ensure a sub-tab is active and rendered
+                const currentActiveTracSubTab = document.querySelector('.trac-sub-content.active');
+                if (!currentActiveTracSubTab) {
+                    // Default to Biology if no sub-tab is active
+                    switchTracSubTab('bioSubTab');
                 } else {
-                    saveTimerState(); // Save state during countdown
+                    // Re-render the currently active sub-tab's table
+                    const subject = currentActiveTracSubTab.id.replace('Content', '');
+                    renderTracTable(subject);
                 }
+            }
+        }
+
+        dailyTrackerTab.addEventListener('click', () => switchTab('dailyTrackerTab'));
+        todoListTab.addEventListener('click', () => switchTab('todoListTab'));
+        tracTab.addEventListener('click', () => switchTab('tracTab'));
+
+        // --- Daily Tracker Logic ---
+        const dailyTrackerData = JSON.parse(localStorage.getItem('dailyTrackerData')) || {};
+        let lastDailyTrackerResetDate = localStorage.getItem('lastDailyTrackerResetDate');
+
+        function formatTime(hour) {
+            const h = hour % 12 || 12; // Convert 0 to 12 for 12 AM/PM
+            const ampm = hour < 12 || hour === 24 ? 'AM' : 'PM';
+            return `${h} ${ampm}`;
+        }
+
+        function renderDailyTracker() {
+            dailyTrackerGrid.innerHTML = ''; // Clear existing entries
+            for (let i = 5; i <= 24; i++) { // From 5 AM to 12 AM (24 for midnight)
+                const timeStr = formatTime(i);
+                const timeId = `hour-${i}`;
+
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'daily-tracker-row';
+
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'daily-tracker-time editable-time';
+                timeDiv.setAttribute('contenteditable', 'true');
+                timeDiv.setAttribute('data-time-id', timeId);
+                timeDiv.textContent = timeStr; // Initial time
+
+                const activityDiv = document.createElement('textarea');
+                activityDiv.className = 'daily-tracker-activity';
+                activityDiv.placeholder = 'What happened this hour?';
+                activityDiv.rows = 2; // Allow multiple lines
+                activityDiv.value = dailyTrackerData[timeId] || ''; // Load saved data
+
+                // Save data on input change
+                activityDiv.addEventListener('input', () => {
+                    dailyTrackerData[timeId] = activityDiv.value;
+                    localStorage.setItem('dailyTrackerData', JSON.stringify(dailyTrackerData));
+                });
+
+                // Handle editing of time itself (visual only, ID remains fixed)
+                timeDiv.addEventListener('blur', () => {
+                    // This allows users to customize the label without breaking data association.
+                    // No need to save this specific label change, as it's just visual.
+                });
+
+                rowDiv.appendChild(timeDiv);
+                rowDiv.appendChild(activityDiv);
+                dailyTrackerGrid.appendChild(rowDiv);
+            }
+        }
+
+        // --- To-Do List Logic ---
+        let todoItems = JSON.parse(localStorage.getItem('todoItems')) || [];
+
+        // Helper function to format milliseconds into HH:MM:SS
+        function formatElapsedTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return [hours, minutes, seconds]
+                .map(unit => String(unit).padStart(2, '0'))
+                .join(':');
+        }
+
+        function saveTodoItems() {
+            localStorage.setItem('todoItems', JSON.stringify(todoItems));
+        }
+
+        function startTimer(item) {
+            if (item.isTimerRunning || item.completed) return;
+
+            item.isTimerRunning = true;
+            item.startTime = Date.now() - item.elapsedTime;
+            item.timerIntervalId = setInterval(() => {
+                item.elapsedTime = Date.now() - item.startTime;
+                // Find the specific time display span for this item and update it
+                const timeDisplayElement = document.querySelector(`[data-task-id="${item.id}"] .todo-section-timer`);
+                if (timeDisplayElement) {
+                    timeDisplayElement.textContent = formatElapsedTime(item.elapsedTime);
+                }
+                saveTodoItems();
             }, 1000);
+            saveTodoItems();
+            renderTodoItems();
         }
 
-        function pauseTimer() {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
-            startTimerBtn.disabled = false;
-            pauseTimerBtn.disabled = true;
-            minutesInput.disabled = false;
-            secondsInput.disabled = false;
-            saveTimerState(); // Save state when paused
+        function stopTimer(item) {
+            if (!item.isTimerRunning) return;
+
+            clearInterval(item.timerIntervalId);
+            item.isTimerRunning = false;
+            item.elapsedTime = Date.now() - item.startTime;
+            saveTodoItems();
+            renderTodoItems();
         }
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
-            timeRemaining = totalTimerSeconds; // Reset to initial set time
-            updateTimerDisplay();
-            startTimerBtn.disabled = false;
-            pauseTimerBtn.disabled = true;
-            resetTimerBtn.disabled = true;
-            minutesInput.disabled = false;
-            secondsInput.disabled = false;
-            saveTimerState(); // Save reset state
+        function resetTimer(item) {
+            stopTimer(item);
+            item.elapsedTime = 0;
+            saveTodoItems();
+            renderTodoItems();
         }
 
-        // Event listeners for timer controls
-        startTimerBtn.addEventListener('click', startTimer);
-        pauseTimerBtn.addEventListener('click', pauseTimer);
-        resetTimerBtn.addEventListener('click', resetTimer);
-
-        // Input change listeners for minutes/seconds to update initial values
-        minutesInput.addEventListener('input', () => {
-            initialMinutes = parseInt(minutesInput.value) || 0;
-            totalTimerSeconds = initialMinutes * 60 + (parseInt(secondsInput.value) || 0);
-            if (!isTimerRunning) { // Only update display if timer is not running
-                timeRemaining = totalTimerSeconds;
-                updateTimerDisplay();
-            }
-            saveTimerState(); // Save initial set time
-            resetTimerBtn.disabled = (timeRemaining === totalTimerSeconds); // Enable reset if inputs change
-        });
-        secondsInput.addEventListener('input', () => {
-            initialSeconds = parseInt(secondsInput.value) || 0;
-            totalTimerSeconds = (parseInt(minutesInput.value) || 0) * 60 + initialSeconds;
-            if (!isTimerRunning) { // Only update display if timer is not running
-                timeRemaining = totalTimerSeconds;
-                updateTimerDisplay();
-            }
-            saveTimerState(); // Save initial set time
-            resetTimerBtn.disabled = (timeRemaining === totalTimerSeconds); // Enable reset if inputs change
-        });
-
-        // --- Progress Tracking Logic ---
-        const progressChartCanvas = document.getElementById('progressChart');
-        const clearProgressHistoryBtn = document.getElementById('clearProgressHistoryBtn');
-        const ctx = progressChartCanvas.getContext('2d');
-
-        function getWeekNumber(d) {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-            return weekNo;
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
         }
 
-        function getMonthName(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleString('en-US', { month: 'short', year: 'numeric' }); // e.g., Jul 2024
-        }
+        function renderTodoItems() {
+            todoList.innerHTML = ''; // Clear existing items
+            todoItems.forEach((mainTask) => {
+                const mainTaskSection = document.createElement('div');
+                mainTaskSection.className = 'todo-section';
+                mainTaskSection.setAttribute('data-task-id', mainTask.id);
 
-        function renderProgressChart(timeframe) {
-            const dailyProgress = JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY) || '{}');
-            let chartLabels = [];
-            let chartData = [];
-            let maxYValue = 0; // Max value for the Y-axis
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'todo-section-header';
 
-            // Helper to get total possible tasks from the current checklist structure
-            const getCurrentTotalTasks = () => {
-                let total = 0;
-                const checklistState = JSON.parse(localStorage.getItem(CHECKLIST_STORAGE_KEY) || '{}');
-                for (const taskId in checklistState) {
-                    total++;
-                }
-                return total > 0 ? total : DEFAULT_CHECKLIST_TEMPLATE.length; // Fallback to default template count
-            };
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'todo-section-title';
+                titleDiv.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm14.024-.983a1.125 1.125 0 010 1.966l-5.604 3.113a1.125 1.125 0 01-1.726-1.966l5.604-3.113a1.125 1.125 0 011.726 1.966z" clip-rule="evenodd" />
+                    </svg>
+                `;
+                const mainTaskNameSpan = document.createElement('span');
+                mainTaskNameSpan.className = 'editable-task-name';
+                mainTaskNameSpan.setAttribute('contenteditable', 'true');
+                mainTaskNameSpan.textContent = mainTask.name;
+                mainTaskNameSpan.addEventListener('blur', () => {
+                    mainTask.name = mainTaskNameSpan.textContent.trim();
+                    saveTodoItems();
+                });
+                titleDiv.appendChild(mainTaskNameSpan);
 
-            if (timeframe === 'daily') {
-                // For daily, show last 7 days
-                for (let i = 0; i < 7; i++) {
-                    const d = new Date();
-                    d.setDate(d.getDate() - (6 - i));
-                    const dateString = d.toISOString().slice(0, 10);
-                    const progress = dailyProgress[dateString];
+                const timerAndActionsDiv = document.createElement('div');
+                timerAndActionsDiv.className = 'flex items-center gap-2';
 
-                    chartLabels.push(dateString.slice(5)); // MM-DD
-                    chartData.push(progress ? progress.completed : 0);
-                    if (progress) maxYValue = Math.max(maxYValue, progress.total);
-                }
-            } else if (timeframe === 'weekly') {
-                // For weekly, show last 8 weeks (current week + 7 previous)
-                const weeklyAggregated = {};
-                const sortedDates = Object.keys(dailyProgress).sort();
+                const timeDisplaySpan = document.createElement('span');
+                timeDisplaySpan.className = 'todo-section-timer';
+                timeDisplaySpan.textContent = formatElapsedTime(mainTask.elapsedTime);
+                timerAndActionsDiv.appendChild(timeDisplaySpan);
 
-                sortedDates.forEach(dateString => {
-                    const date = new Date(dateString);
-                    const year = date.getFullYear();
-                    const week = getWeekNumber(date);
-                    const weekKey = `${year}-W${week.toString().padStart(2, '0')}`;
+                const mainTaskActions = document.createElement('div');
+                mainTaskActions.className = 'flex gap-1';
 
-                    if (!weeklyAggregated[weekKey]) {
-                        weeklyAggregated[weekKey] = { completed: 0, total: 0 };
+                const startButton = document.createElement('button');
+                startButton.className = 'action-button start-button';
+                startButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>`;
+                startButton.title = 'Start Timer';
+                startButton.addEventListener('click', () => startTimer(mainTask));
+
+                const stopButton = document.createElement('button');
+                stopButton.className = 'action-button stop-button';
+                stopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.25 7.5A.75.75 0 008.5 8.25v3.5a.75.75 0 001.5 0v-3.5a.75.75 0 00-.75-.75zm3 0A.75.75 0 0011.5 8.25v3.5a.75.75 0 001.5 0v-3.5a.75.75 0 00-.75-.75z" clip-rule="evenodd" /></svg>`;
+                stopButton.title = 'Stop Timer';
+                stopButton.addEventListener('click', () => stopTimer(mainTask));
+
+                const resetButton = document.createElement('button');
+                resetButton.className = 'action-button reset-button';
+                resetButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 00-9.201 2.566c.18.508.336.982.463 1.442.232.853.291 1.673.291 2.288 0 .42-.147.79-.413 1.056A.75.75 0 015.378 18h-.003a.75.75 0 01-.53-.22L2.72 15.37a.75.75 0 010-1.06l2.12-2.12a.75.75 0 011.06 1.06l-1.603 1.603 1.153 1.153c.205-.38.33-.82.33-1.328 0-.46-.076-.9-.22-1.307a4 4 0 016.382-2.022l-.995-.995a.75.75 0 011.06-1.06l2.25 2.25a.75.75 0 010 1.06l-2.25 2.25a.75.75 0 01-1.06-1.06l.995-.995z" clip-rule="evenodd" /></svg>`;
+                resetButton.title = 'Reset Timer';
+                resetButton.addEventListener('click', () => resetTimer(mainTask));
+
+                const deleteMainTaskButton = document.createElement('button');
+                deleteMainTaskButton.className = 'action-button delete-button';
+                deleteMainTaskButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>`;
+                deleteMainTaskButton.title = 'Delete Main Task';
+                deleteMainTaskButton.addEventListener('click', () => {
+                    stopTimer(mainTask);
+                    todoItems = todoItems.filter(task => task.id !== mainTask.id);
+                    saveTodoItems();
+                    renderTodoItems();
+                });
+
+                if (!mainTask.completed) {
+                    if (mainTask.isTimerRunning) {
+                        mainTaskActions.appendChild(stopButton);
+                    } else {
+                        mainTaskActions.appendChild(startButton);
                     }
-                    weeklyAggregated[weekKey].completed += dailyProgress[dateString].completed;
-                    weeklyAggregated[weekKey].total += dailyProgress[dateString].total;
+                    mainTaskActions.appendChild(resetButton);
+                } else {
+                    mainTaskActions.appendChild(resetButton);
+                }
+                mainTaskActions.appendChild(deleteMainTaskButton);
+
+                timerAndActionsDiv.appendChild(mainTaskActions);
+                headerDiv.appendChild(titleDiv);
+                headerDiv.appendChild(timerAndActionsDiv);
+                mainTaskSection.appendChild(headerDiv);
+
+                // Sub-tasks
+                const subTasksList = document.createElement('div');
+                subTasksList.className = 'space-y-1';
+                mainTask.subTasks.forEach((subTask, subIndex) => {
+                    const subTaskDiv = document.createElement('div');
+                    subTaskDiv.className = `todo-item ${subTask.completed ? 'completed' : ''}`;
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = subTask.completed;
+                    checkbox.addEventListener('change', () => {
+                        subTask.completed = checkbox.checked;
+                        saveTodoItems();
+                        renderTodoItems(); // Re-render to update completed state visually
+                    });
+
+                    const subTaskNameSpan = document.createElement('span');
+                    subTaskNameSpan.className = 'editable-task-name flex-grow';
+                    subTaskNameSpan.setAttribute('contenteditable', 'true');
+                    subTaskNameSpan.textContent = subTask.name;
+                    subTaskNameSpan.addEventListener('blur', () => {
+                        subTask.name = subTaskNameSpan.textContent.trim();
+                        saveTodoItems();
+                    });
+
+                    const subTaskActions = document.createElement('div');
+                    subTaskActions.className = 'todo-item-actions';
+
+                    const deleteSubTaskButton = document.createElement('button');
+                    deleteSubTaskButton.className = 'action-button delete-button';
+                    deleteSubTaskButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>`;
+                    deleteSubTaskButton.title = 'Delete Sub-task';
+                    deleteSubTaskButton.addEventListener('click', () => {
+                        mainTask.subTasks.splice(subIndex, 1);
+                        saveTodoItems();
+                        renderTodoItems();
+                    });
+
+                    subTaskActions.appendChild(deleteSubTaskButton);
+
+                    subTaskDiv.appendChild(checkbox);
+                    subTaskDiv.appendChild(subTaskNameSpan);
+                    subTaskDiv.appendChild(subTaskActions);
+                    subTasksList.appendChild(subTaskDiv);
                 });
 
-                // Get keys for the last 8 weeks, including the current week
-                const today = new Date();
-                let weeksToShow = [];
-                for (let i = 7; i >= 0; i--) { // Iterate backwards from current week to 7 weeks ago
-                    let d = new Date(today);
-                    d.setDate(d.getDate() - (i * 7)); // Go back i full weeks
-                    const year = d.getFullYear();
-                    const week = getWeekNumber(d);
-                    weeksToShow.push(`${year}-W${week.toString().padStart(2, '0')}`);
-                }
-                weeksToShow = [...new Set(weeksToShow)].sort(); // Remove duplicates and sort
-
-                for (const weekKey of weeksToShow) {
-                    chartLabels.push(`W${weekKey.split('-W')[1]}`);
-                    const data = weeklyAggregated[weekKey];
-                    chartData.push(data ? data.completed : 0);
-                    if (data) maxYValue = Math.max(maxYValue, data.total);
-                }
-
-            } else if (timeframe === 'monthly') {
-                // For monthly, show last 6 months
-                const monthlyAggregated = {};
-                const sortedDates = Object.keys(dailyProgress).sort();
-
-                sortedDates.forEach(dateString => {
-                    const date = new Date(dateString);
-                    const monthKey = `${date.getFullYear()}-${date.getMonth()}`; // Year-Month index
-
-                    if (!monthlyAggregated[monthKey]) {
-                        monthlyAggregated[monthKey] = { completed: 0, total: 0 };
+                // Add Sub-task Input
+                const addSubTaskDiv = document.createElement('div');
+                addSubTaskDiv.className = 'flex gap-2 ml-6 mt-2'; // Indent for sub-task input
+                const newSubTaskInput = document.createElement('input');
+                newSubTaskInput.type = 'text';
+                newSubTaskInput.placeholder = 'Add a sub-task...';
+                newSubTaskInput.className = 'flex-grow editable-task-name px-3 py-1.5 rounded-md border border-gray-300 focus:ring-1 focus:ring-indigo-200 focus:border-indigo-400 text-sm';
+                newSubTaskInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const subTaskName = newSubTaskInput.value.trim();
+                        if (subTaskName) {
+                            mainTask.subTasks.push({ name: subTaskName, completed: false });
+                            newSubTaskInput.value = '';
+                            saveTodoItems();
+                            renderTodoItems();
+                        }
                     }
-                    monthlyAggregated[monthKey].completed += dailyProgress[dateString].completed;
-                    monthlyAggregated[monthKey].total += dailyProgress[dateString].total;
+                });
+                const addSubTaskButton = document.createElement('button');
+                addSubTaskButton.className = 'bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-1 px-2 rounded-md text-xs shadow-sm transition duration-200';
+                addSubTaskButton.textContent = 'Add';
+                addSubTaskButton.addEventListener('click', () => {
+                    const subTaskName = newSubTaskInput.value.trim();
+                    if (subTaskName) {
+                        mainTask.subTasks.push({ name: subTaskName, completed: false });
+                        newSubTaskInput.value = '';
+                        saveTodoItems();
+                        renderTodoItems();
+                    }
                 });
 
-                // Get keys for the last 6 months, including the current month
-                const today = new Date();
-                let monthsToShow = [];
-                for (let i = 5; i >= 0; i--) { // Iterate backwards from current month to 5 months ago
-                    let d = new Date(today);
-                    d.setMonth(d.getMonth() - i);
-                    const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
-                    monthsToShow.push(monthKey);
-                }
-                monthsToShow = [...new Set(monthsToShow)].sort((a, b) => {
-                    const [y1, m1] = a.split('-').map(Number);
-                    const [y2, m2] = b.split('-').map(Number);
-                    if (y1 !== y2) return y1 - y2;
-                    return m1 - m2;
-                });
+                addSubTaskDiv.appendChild(newSubTaskInput);
+                addSubTaskDiv.appendChild(addSubTaskButton);
 
-                for (const monthKey of monthsToShow) {
-                    const d = new Date(parseInt(monthKey.split('-')[0]), parseInt(monthKey.split('-')[1]), 1);
-                    chartLabels.push(getMonthName(d.toISOString().slice(0, 10)));
-                    const data = monthlyAggregated[monthKey];
-                    chartData.push(data ? data.completed : 0);
-                    if (data) maxYValue = Math.max(maxYValue, data.total);
-                }
-            }
-
-            // Fallback for maxYValue if no data or aggregated data has no total
-            if (maxYValue === 0) {
-                maxYValue = getCurrentTotalTasks();
-            }
-            if (maxYValue === 0) maxYValue = 1; // Ensure it's at least 1 to avoid division by zero
-
-
-            // Clear canvas
-            ctx.clearRect(0, 0, progressChartCanvas.width, progressChartCanvas.height);
-
-            // Set canvas size for responsiveness
-            progressChartCanvas.width = progressChartCanvas.offsetWidth;
-            progressChartCanvas.height = progressChartCanvas.offsetHeight || 350; // Default height if not set by CSS
-
-            const chartPadding = 60;
-            const chartWidth = progressChartCanvas.width - chartPadding * 2;
-            const chartHeight = progressChartCanvas.height - chartPadding * 2;
-
-            const barCount = chartData.length;
-            if (barCount === 0) {
-                ctx.fillStyle = '#6b7280';
-                ctx.font = '16px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText('No data available to display.', progressChartCanvas.width / 2, progressChartCanvas.height / 2);
-                return;
-            }
-
-            const barActualWidth = Math.max(10, chartWidth / (barCount * 1.5)); // Ensure min width
-            const barSpacing = (chartWidth - (barActualWidth * barCount)) / (barCount - 1 || 1); // Space between bars
-
-            // Draw Y-axis
-            ctx.beginPath();
-            ctx.moveTo(chartPadding, chartPadding);
-            ctx.lineTo(chartPadding, chartHeight + chartPadding);
-            ctx.strokeStyle = '#ccc';
-            ctx.stroke();
-
-            // Draw X-axis
-            ctx.beginPath();
-            ctx.moveTo(chartPadding, chartHeight + chartPadding);
-            ctx.lineTo(chartWidth + chartPadding, chartHeight + chartPadding);
-            ctx.strokeStyle = '#ccc';
-            ctx.stroke();
-
-            // Draw bars
-            for (let i = 0; i < barCount; i++) {
-                const barValue = chartData[i];
-                const barHeight = (barValue / maxYValue) * chartHeight;
-                const x = chartPadding + (i * (barActualWidth + barSpacing));
-                const y = chartHeight + chartPadding - barHeight;
-
-                ctx.fillStyle = '#6366f1'; // Indigo 500
-                ctx.fillRect(x, y, barActualWidth, barHeight);
-
-                // Draw labels (date/week/month)
-                ctx.fillStyle = '#333';
-                ctx.font = '12px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText(chartLabels[i], x + barActualWidth / 2, chartHeight + chartPadding + 20);
-
-                // Draw data value on top of bar
-                if (barValue > 0) {
-                    ctx.fillText(barValue, x + barActualWidth / 2, y - 5);
-                }
-            }
-
-            // Y-axis label
-            ctx.save();
-            ctx.translate(chartPadding / 2, chartHeight / 2 + chartPadding);
-            ctx.rotate(-Math.PI / 2);
-            ctx.textAlign = 'center';
-            ctx.fillText('Tasks Completed', 0, 0);
-            ctx.restore();
-
-            // X-axis label
-            ctx.textAlign = 'center';
-            ctx.fillText('Period', chartWidth / 2 + chartPadding, chartHeight + chartPadding + 40);
-
-            // Max value on Y-axis
-            ctx.textAlign = 'right';
-            ctx.fillText(maxYValue, chartPadding - 5, chartPadding + 5);
-            ctx.fillText('0', chartPadding - 5, chartHeight + chartPadding + 5);
+                mainTaskSection.appendChild(subTasksList);
+                mainTaskSection.appendChild(addSubTaskDiv);
+                todoList.appendChild(mainTaskSection);
+            });
         }
 
-        clearProgressHistoryBtn.addEventListener('click', () => {
-            if (confirm("Are you sure you want to clear all your progress history? This action cannot be undone.")) {
-                localStorage.removeItem(DAILY_PROGRESS_KEY);
-                renderProgressChart(currentProgressView); // Re-render empty chart
-                alert("Progress history cleared!");
-            }
-        });
+        addTaskButton.addEventListener('click', () => {
+            const taskName = newTaskInput.value.trim();
 
-        // --- Initial Load ---
-        window.onload = () => {
-            // Set canvas dimensions for timer
-            timerCanvas.width = timerCanvas.offsetWidth;
-            timerCanvas.height = timerCanvas.offsetHeight;
-
-            loadChecklistState(); // This will handle daily reset and recording previous day's progress
-            loadTimerState();
-            // Show checklist tab by default
-            showTab('checklist');
-            showProgressView('daily'); // Initialize daily view for progress tab
-        };
-
-        // Re-render chart on window resize for responsiveness
-        window.addEventListener('resize', () => {
-            if (!progressSection.classList.contains('hidden')) {
-                renderProgressChart(currentProgressView);
-            }
-            if (!timerSection.classList.contains('hidden')) {
-                timerCanvas.width = timerCanvas.offsetWidth;
-                timerCanvas.height = timerCanvas.offsetHeight;
-                drawTimerCircle(timerCtx, timeRemaining, totalTimerSeconds);
-            }
-        });
-    </script>
-</body>
-</html>
+            if (taskName) {
+                todoItems.push({
+                    id: generateUniqueId(), // Unique ID for each main task
+                    name: taskName,
+                    completed: false, // Main task completion is not directly tracked
+                    elapsedTime: 0,
+                    isTimerRunning: false,
+                    timerIntervalId: null,
+                    startTime: null,
+                    subTasks: [] // Array to hold sub-tasks
+                });
+                newTaskInput.value = '';
+                saveTodoItems();
+                renderTodoItems();
+            } else {
+                newTaskInput.style.borderColor = '#ef444

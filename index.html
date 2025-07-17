@@ -341,10 +341,10 @@
                 padding: 0.5rem;
             }
             .trac-table th:nth-child(1), .trac-table td:nth-child(1) {
-                width: 25%; /* Adjusted width for more columns */
+                width: 20%; /* Adjusted width for even more columns */
             }
             .trac-table th:not(:nth-child(1)), .trac-table td:not(:nth-child(1)) {
-                width: 8%; /* Smaller width for many checkboxes */
+                width: 6%; /* Even smaller width for many checkboxes */
                 text-align: center;
             }
             .sub-tab-button {
@@ -591,7 +591,7 @@
         // Utility function to format time (HH:MM:SS)
         function formatTime(ms) {
             const totalSeconds = Math.floor(ms / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
+            const hours = Math.floor((totalSeconds % 3600) / 60); // Changed to minutes for HH:MM:SS
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
 
@@ -981,20 +981,27 @@
             table.innerHTML = `
                 <thead>
                     <tr>
-                        <th>Chapter Name</th>
-                        <th>Lec</th>
-                        <th>DPP</th>
-                        <th>Module</th>
-                        <th>NEET PYQ</th>
-                        <th>JEE PYQ</th>
-                        <th>REF BOOK</th>
-                        <th>MAINS LVL</th>
-                        <th>NCERT</th>
-                        <th>PITARA (LTL)</th>
-                        <th>INFINITY PRACTISE</th>
-                        <th>PREP METER</th>
-                        <th>REVISION</th>
-                        <th>Actions</th>
+                        <th rowspan="2">Chapter Name</th>
+                        <th rowspan="2">Lec</th>
+                        <th rowspan="2">DPP</th>
+                        <th rowspan="2">Module</th>
+                        <th rowspan="2">NEET PYQ</th>
+                        <th rowspan="2">JEE PYQ</th>
+                        <th rowspan="2">REF BOOK</th>
+                        <th rowspan="2">MAINS LVL</th>
+                        <th rowspan="2">NCERT</th>
+                        <th rowspan="2">PITARA (LTL)</th>
+                        <th rowspan="2">INFINITY PRACTISE</th>
+                        <th rowspan="2">PREP METER</th>
+                        <th colspan="5">REVISION</th> <!-- Combined Revision header -->
+                        <th rowspan="2">Actions</th>
+                    </tr>
+                    <tr>
+                        <th>R1</th>
+                        <th>R2</th>
+                        <th>R3</th>
+                        <th>R4</th>
+                        <th>R5</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -1019,7 +1026,11 @@
                     <td><input type="checkbox" data-column="pitaraLtl" ${chapter.pitaraLtl ? 'checked' : ''}></td>
                     <td><input type="checkbox" data-column="infinityPractice" ${chapter.infinityPractice ? 'checked' : ''}></td>
                     <td><input type="checkbox" data-column="prepMeter" ${chapter.prepMeter ? 'checked' : ''}></td>
-                    <td><input type="checkbox" data-column="revision" ${chapter.revision ? 'checked' : ''}></td>
+                    <td><input type="checkbox" data-column="revision1" ${chapter.revision1 ? 'checked' : ''}></td>
+                    <td><input type="checkbox" data-column="revision2" ${chapter.revision2 ? 'checked' : ''}></td>
+                    <td><input type="checkbox" data-column="revision3" ${chapter.revision3 ? 'checked' : ''}></td>
+                    <td><input type="checkbox" data-column="revision4" ${chapter.revision4 ? 'checked' : ''}></td>
+                    <td><input type="checkbox" data-column="revision5" ${chapter.revision5 ? 'checked' : ''}></td>
                     <td><button class="btn-danger text-xs px-2 py-1 delete-chapter-btn">Delete</button></td>
                 `;
                 tbody.appendChild(row);
@@ -1055,14 +1066,18 @@
                     dpp: false,
                     module: false,
                     neetPyq: false,
-                    jeePyq: false, // New column
-                    referenceBook: false, // New column
-                    mainsLvl: false, // New column
-                    ncert: false, // New column
-                    pitaraLtl: false, // New column
-                    infinityPractice: false, // New column
-                    prepMeter: false, // New column
-                    revision: false // New column
+                    jeePyq: false,
+                    referenceBook: false,
+                    mainsLvl: false,
+                    ncert: false,
+                    pitaraLtl: false,
+                    infinityPractice: false,
+                    prepMeter: false,
+                    revision1: false, // New revision column
+                    revision2: false, // New revision column
+                    revision3: false, // New revision column
+                    revision4: false, // New revision column
+                    revision5: false // New revision column
                 };
                 tracData[subject].push(newChapter);
                 inputElement.value = '';

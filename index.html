@@ -1,3 +1,4 @@
+Padmabhushan Patil, [17-07-2025 11:10]
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,7 +100,8 @@
             background-color: #ffffff;
         }
 
-        /* Daily Tracker Grid (New UI) */
+Padmabhushan Patil, [17-07-2025 11:10]
+/* Daily Tracker Grid (New UI) */
         .daily-tracker-grid {
             display: flex;
             flex-direction: column;
@@ -202,7 +204,9 @@
             border-color: #4f46e5;
         }
         .todo-item .editable-task-name {
-            background-color: transparent; /* No background for input */
+
+Padmabhushan Patil, [17-07-2025 11:10]
+background-color: transparent; /* No background for input */
             border: none;
             padding: 0;
             font-size: 1rem;
@@ -312,7 +316,9 @@
             outline: none;
             background-color: #eef2ff;
             border-radius: 0.25rem;
-        }
+
+Padmabhushan Patil, [17-07-2025 11:10]
+}
         .revision-checkbox-group {
             display: flex;
             gap: 0.25rem; /* Small gap between checkboxes */
@@ -403,7 +409,8 @@
             </div>
         </div>
 
-        <!-- Trac Content -->
+Padmabhushan Patil, [17-07-2025 11:10]
+<!-- Trac Content -->
         <div id="tracContent" class="tab-content">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">My Study Tracker</h2>
             <!-- Sub-tab Navigation for Trac -->
@@ -473,7 +480,8 @@
 
         const dailyTrackerGrid = document.getElementById('dailyTrackerGrid');
 
-        const newTaskInput = document.getElementById('newTaskInput');
+Padmabhushan Patil, [17-07-2025 11:10]
+const newTaskInput = document.getElementById('newTaskInput');
         const addTaskButton = document.getElementById('addTaskButton');
         const todoList = document.getElementById('todoList');
 
@@ -542,16 +550,17 @@
         function formatTime(hour) {
             const h = hour % 12 || 12; // Convert 0 to 12 for 12 AM/PM
             const ampm = hour < 12 || hour === 24 ? 'AM' : 'PM';
-            return `${h} ${ampm}`;
+            return ${h} ${ampm};
         }
 
         function renderDailyTracker() {
             dailyTrackerGrid.innerHTML = ''; // Clear existing entries
             for (let i = 5; i <= 24; i++) { // From 5 AM to 12 AM (24 for midnight)
                 const timeStr = formatTime(i);
-                const timeId = `hour-${i}`;
+                const timeId = hour-${i};
 
-                const rowDiv = document.createElement('div');
+Padmabhushan Patil, [17-07-2025 11:10]
+const rowDiv = document.createElement('div');
                 rowDiv.className = 'daily-tracker-row';
 
                 const timeDiv = document.createElement('div');
@@ -610,7 +619,7 @@
             item.timerIntervalId = setInterval(() => {
                 item.elapsedTime = Date.now() - item.startTime;
                 // Find the specific time display span for this item and update it
-                const timeDisplayElement = document.querySelector(`[data-task-id="${item.id}"] .todo-section-timer`);
+                const timeDisplayElement = document.querySelector([data-task-id="${item.id}"] .todo-section-timer);
                 if (timeDisplayElement) {
                     timeDisplayElement.textContent = formatElapsedTime(item.elapsedTime);
                 }
@@ -648,16 +657,17 @@
                 mainTaskSection.className = 'todo-section';
                 mainTaskSection.setAttribute('data-task-id', mainTask.id);
 
-                const headerDiv = document.createElement('div');
+Padmabhushan Patil, [17-07-2025 11:10]
+const headerDiv = document.createElement('div');
                 headerDiv.className = 'todo-section-header';
 
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'todo-section-title';
-                titleDiv.innerHTML = `
+                titleDiv.innerHTML = 
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                         <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm14.024-.983a1.125 1.125 0 010 1.966l-5.604 3.113a1.125 1.125 0 01-1.726-1.966l5.604-3.113a1.125 1.125 0 011.726 1.966z" clip-rule="evenodd" />
                     </svg>
-                `;
+                ;
                 const mainTaskNameSpan = document.createElement('span');
                 mainTaskNameSpan.className = 'editable-task-name';
                 mainTaskNameSpan.setAttribute('contenteditable', 'true');
@@ -681,26 +691,27 @@
 
                 const startButton = document.createElement('button');
                 startButton.className = 'action-button start-button';
-                startButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>`;
+                startButton.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>;
                 startButton.title = 'Start Timer';
                 startButton.addEventListener('click', () => startTimer(mainTask));
 
                 const stopButton = document.createElement('button');
                 stopButton.className = 'action-button stop-button';
-                stopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.25 7.5A.75.75 0 008.5 8.25v3.5a.75.75 0 001.5 0v-3.5a.75.75 0 00-.75-.75zm3 0A.75.75 0 0011.5 8.25v3.5a.75.75 0 001.5 0v-3.5a.75.75 0 00-.75-.75z" clip-rule="evenodd" /></svg>`;
+                stopButton.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.25 7.5A.75.75 0 008.5 8.25v3.5a.75.75 0 001.5 0v-3.5a.75.75 0 00-.75-.75zm3 0A.75.75 0 0011.5 8.25v3.5a.75.75 0 001.5 0v-3.5a.75.75 0 00-.75-.75z" clip-rule="evenodd" /></svg>;
                 stopButton.title = 'Stop Timer';
                 stopButton.addEventListener('click', () => stopTimer(mainTask));
 
                 const resetButton = document.createElement('button');
                 resetButton.className = 'action-button reset-button';
-                resetButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 00-9.201 2.566c.18.508.336.982.463 1.442.232.853.291 1.673.291 2.288 0 .42-.147.79-.413 1.056A.75.75 0 015.378 18h-.003a.75.75 0 01-.53-.22L2.72 15.37a.75.75 0 010-1.06l2.12-2.12a.75.75 0 011.06 1.06l-1.603 1.603 1.153 1.153c.205-.38.33-.82.33-1.328 0-.46-.076-.9-.22-1.307a4 4 0 016.382-2.022l-.995-.995a.75.75 0 011.06-1.06l2.25 2.25a.75.75 0 010 1.06l-2.25 2.25a.75.75 0 01-1.06-1.06l.995-.995z" clip-rule="evenodd" /></svg>`;
+                resetButton.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 00-9.201 2.566c.18.508.336.982.463 1.442.232.853.291 1.673.291 2.288 0 .42-.147.79-.413 1.056A.75.75 0 015.378 18h-.003a.75.75 0 01-.53-.22L2.72 15.37a.75.75 0 010-1.06l2.12-2.12a.75.75 0 011.06 1.06l-1.603 1.603 1.153 1.153c.205-.38.33-.82.33-1.328 0-.46-.076-.9-.22-1.307a4 4 0 016.382-2.022l-.995-.995a.75.75 0 011.06-1.06l2.25 2.25a.75.75 0 010 1.06l-2.25 2.25a.75.75 0 01-1.06-1.06l.995-.995z" clip-rule="evenodd" /></svg>;
                 resetButton.title = 'Reset Timer';
                 resetButton.addEventListener('click', () => resetTimer(mainTask));
 
-                const deleteMainTaskButton = document.createElement('button');
+Padmabhushan Patil, [17-07-2025 11:10]
+const deleteMainTaskButton = document.createElement('button');
                 deleteMainTaskButton.className = 'action-button delete-button';
-                deleteMainTaskButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>`;
+                deleteMainTaskButton.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>;
                 deleteMainTaskButton.title = 'Delete Main Task';
                 deleteMainTaskButton.addEventListener('click', () => {
                     stopTimer(mainTask);
@@ -731,7 +742,7 @@
                 subTasksList.className = 'space-y-1';
                 mainTask.subTasks.forEach((subTask, subIndex) => {
                     const subTaskDiv = document.createElement('div');
-                    subTaskDiv.className = `todo-item ${subTask.completed ? 'completed' : ''}`;
+                    subTaskDiv.className = todo-item ${subTask.completed ? 'completed' : ''};
 
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
@@ -756,9 +767,11 @@
 
                     const deleteSubTaskButton = document.createElement('button');
                     deleteSubTaskButton.className = 'action-button delete-button';
-                    deleteSubTaskButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>`;
-                    deleteSubTaskButton.title = 'Delete Sub-task';
+                    deleteSubTaskButton.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>;
+
+Padmabhushan Patil, [17-07-2025 11:10]
+deleteSubTaskButton.title = 'Delete Sub-task';
                     deleteSubTaskButton.addEventListener('click', () => {
                         mainTask.subTasks.splice(subIndex, 1);
                         saveTodoItems();
@@ -831,4 +844,226 @@
                 saveTodoItems();
                 renderTodoItems();
             } else {
-                newTaskInput.style.borderColor = '#ef444
+                newTaskInput.style.borderColor = '#ef4444';
+                setTimeout(() => {
+                    newTaskInput.style.borderColor = '#e5e7eb';
+                }, 1500);
+            }
+        });
+
+        // --- Trac Tab Logic ---
+        const tracCheckboxes = [
+            "Lec", "DPP", "Module", "NEET PYQ", "JEE PYQ", "Reference Book",
+            "Mains Level", "NCERT", "Pitara (LTL)", "Infinite Prac", "Prep Meter", "Revision"
+        ];
+
+Padmabhushan Patil, [17-07-2025 11:10]
+let tracData = JSON.parse(localStorage.getItem('tracData')) || {
+            bio: [],
+            chem: [],
+            phys: []
+        };
+
+        function saveTracData() {
+            localStorage.setItem('tracData', JSON.stringify(tracData));
+        }
+
+        // --- Sub-tab Switching Logic for Trac ---
+        let currentActiveTracSubject = 'bio'; // Default active subject
+
+        function switchTracSubTab(activeSubTabId) {
+            // Remove active class from all sub-tabs and content
+            bioSubTab.classList.remove('active');
+            chemSubTab.classList.remove('active');
+            physSubTab.classList.remove('active');
+
+            bioContent.classList.remove('active');
+            chemContent.classList.remove('active');
+            physContent.classList.remove('active');
+
+            // Add active class to the selected sub-tab and content
+            if (activeSubTabId === 'bioSubTab') {
+                bioSubTab.classList.add('active');
+                bioContent.classList.add('active');
+                currentActiveTracSubject = 'bio';
+            } else if (activeSubTabId === 'chemSubTab') {
+                chemSubTab.classList.add('active');
+                chemContent.classList.add('active');
+                currentActiveTracSubject = 'chem';
+            } else if (activeSubTabId === 'physSubTab') {
+                physSubTab.classList.add('active');
+                physContent.classList.add('active');
+                currentActiveTracSubject = 'phys';
+            }
+            renderTracTable(currentActiveTracSubject); // Render the table for the active subject
+        }
+
+        bioSubTab.addEventListener('click', () => switchTracSubTab('bioSubTab'));
+        chemSubTab.addEventListener('click', () => switchTracSubTab('chemSubTab'));
+        physSubTab.addEventListener('click', () => switchTracSubTab('physSubTab'));
+
+        function renderTracTable(subject) {
+            const container = document.getElementById(${subject}TableContainer);
+            container.innerHTML = ''; // Clear existing table
+
+            const table = document.createElement('table');
+            table.className = 'trac-table';
+
+            // Create table header
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            const chapterNameTh = document.createElement('th');
+            chapterNameTh.textContent = 'Chapter Name';
+            headerRow.appendChild(chapterNameTh);
+
+            tracCheckboxes.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col;
+                headerRow.appendChild(th);
+            });
+            // Add header for delete button
+            const deleteHeaderTh = document.createElement('th');
+            deleteHeaderTh.textContent = 'Actions';
+            headerRow.appendChild(deleteHeaderTh);
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create table body
+            const tbody = document.createElement('tbody');
+            tracData[subject].forEach((chapter, chapterIndex) => {
+                const row = document.createElement('tr');
+
+                // Chapter Name cell
+                const chapterNameTd = document.createElement('td');
+                const chapterNameSpan = document.createElement('span');
+                chapterNameSpan.className = 'chapter-name-cell';
+                chapterNameSpan.setAttribute('contenteditable', 'true');
+                chapterNameSpan.textContent = chapter.chapterName;
+                chapterNameSpan.addEventListener('blur', () => {
+                    chapter.chapterName = chapterNameSpan.textContent.trim();
+                    saveTracData();
+                });
+                chapterNameTd.appendChild(chapterNameSpan);
+                row.appendChild(chapterNameTd);
+
+Padmabhushan Patil, [17-07-2025 11:10]
+// Checkbox cells
+                tracCheckboxes.forEach(col => {
+                    const td = document.createElement('td');
+                    if (col === "Revision") {
+                        const revisionGroup = document.createElement('div');
+                        revisionGroup.className = 'revision-checkbox-group';
+                        for (let i = 0; i < 5; i++) {
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            // Ensure chapter.Revision is an array, initialize if not
+                            if (!Array.isArray(chapter.Revision)) {
+                                chapter.Revision = [false, false, false, false, false];
+                            }
+                            checkbox.checked = chapter.Revision[i]; // Load saved state for each checkbox
+                            checkbox.addEventListener('change', () => {
+                                chapter.Revision[i] = checkbox.checked;
+                                saveTracData();
+                            });
+                            revisionGroup.appendChild(checkbox);
+                        }
+                        td.appendChild(revisionGroup);
+                    } else {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = chapter[col]; // Load saved state
+                        checkbox.addEventListener('change', () => {
+                            chapter[col] = checkbox.checked;
+                            saveTracData();
+                        });
+                        td.appendChild(checkbox);
+                    }
+                    row.appendChild(td);
+                });
+
+                // Add a delete button for the row
+                const deleteTd = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'action-button delete-button';
+                deleteButton.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" /></svg>;
+                deleteButton.title = 'Delete Chapter';
+                deleteButton.addEventListener('click', () => {
+                    tracData[subject].splice(chapterIndex, 1);
+                    saveTracData();
+                    renderTracTable(subject); // Re-render after deletion
+                });
+                deleteTd.appendChild(deleteButton);
+                row.appendChild(deleteTd);
+
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+
+        function addChapter(subject, inputElement) {
+            const chapterName = inputElement.value.trim();
+            if (chapterName) {
+                const newChapter = { chapterName: chapterName };
+                tracCheckboxes.forEach(col => {
+                    if (col === "Revision") {
+                        newChapter[col] = [false, false, false, false, false]; // Initialize 5 checkboxes for Revision
+                    } else {
+                        newChapter[col] = false; // Initialize other checkboxes to false
+                    }
+                });
+                tracData[subject].push(newChapter);
+                inputElement.value = ''; // Clear input
+                saveTracData();
+
+Padmabhushan Patil, [17-07-2025 11:10]
+renderTracTable(subject); // Re-render the table
+            } else {
+                inputElement.style.borderColor = '#ef4444'; // Red border
+                setTimeout(() => {
+                    inputElement.style.borderColor = '#e5e7eb'; // Back to normal
+                }, 1500);
+            }
+        }
+
+        addBioChapterButton.addEventListener('click', () => addChapter('bio', newBioChapterInput));
+        addChemChapterButton.addEventListener('click', () => addChapter('chem', newChemChapterInput));
+        addPhysChapterButton.addEventListener('click', () => addChapter('phys', newPhysChapterInput));
+
+        // Initial render on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toDateString();
+
+            // --- Daily Tracker Reset Logic ---
+            if (localStorage.getItem('lastDailyTrackerResetDate') !== today) {
+                // It's a new day, reset the daily tracker
+                localStorage.removeItem('dailyTrackerData');
+                localStorage.setItem('lastDailyTrackerResetDate', today);
+                // Re-initialize dailyTrackerData to an empty object for the new day
+                // This assumes dailyTrackerData is a global or accessible variable.
+                // If not, you might need to re-fetch it or pass it.
+                // For now, let's assume it's directly updated.
+                Object.keys(dailyTrackerData).forEach(key => delete dailyTrackerData[key]);
+            }
+            renderDailyTracker();
+
+
+            // On load, ensure all todo timers are stopped as setIntervals don't persist across sessions.
+            todoItems.forEach(item => {
+                if (item.isTimerRunning) {
+                    clearInterval(item.timerIntervalId);
+                    item.isTimerRunning = false;
+                }
+                item.timerIntervalId = null;
+                item.startTime = null;
+            });
+            saveTodoItems();
+            renderTodoItems();
+            switchTab('dailyTrackerTab'); // Default to Daily Tracker tab
+            switchTracSubTab('bioSubTab'); // Default to Biology sub-tab within Trac
+        });
+    </script>
+</body>
+</html>

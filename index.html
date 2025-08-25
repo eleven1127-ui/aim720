@@ -352,6 +352,48 @@
             font-size: 0.9rem;
         }
 
+        /* Roadmap Specific Styles */
+        .roadmap-grid {
+            /* This is the key change to support 10 columns */
+            grid-template-columns: repeat(10, 1fr); /* 10 columns for each sub-grid */
+            gap: 1.5rem;
+            display: grid; /* Ensure this is set for grid layout */
+            overflow-x: auto; /* Allow horizontal scrolling if needed */
+        }
+        .roadmap-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .roadmap-column-header {
+            background-color: #e0f2fe;
+            color: #3b82f6;
+            font-weight: 600;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            cursor: text;
+            white-space: nowrap; /* Prevent wrapping in headers */
+        }
+        .roadmap-column-header:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .roadmap-grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8fafc;
+            border: 1px solid #e0e7eb;
+            border-radius: 6px;
+            height: 40px; /* Fixed height for squares */
+        }
+        .roadmap-grid-item input[type="checkbox"] {
+            transform: scale(1.2);
+            accent-color: #3b82f6;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .container {
@@ -430,6 +472,20 @@
                 padding: 0.6rem 0.8rem;
                 font-size: 0.9rem;
             }
+            .roadmap-grid {
+                grid-template-columns: repeat(2, 1fr); /* Revert to 2 columns on mobile for better visibility */
+                gap: 1rem;
+            }
+            .roadmap-column-header {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+            .roadmap-grid-item {
+                height: 32px;
+            }
+            .roadmap-grid-item input[type="checkbox"] {
+                transform: scale(1);
+            }
         }
     </style>
 </head>
@@ -437,8 +493,9 @@
     <div class="container">
         <!-- Tab Navigation -->
         <div class="flex border-b border-gray-200 bg-gray-50 rounded-t-lg">
-            <button id="dailyTrackerTab" class="tab-button active flex-1 text-center">Daily Tracker</button>
+            <button id="dailyTrackerTab" class="tab-button flex-1 text-center">Daily Tracker</button>
             <button id="todoListTab" class="tab-button flex-1 text-center">To-Do List</button>
+            <button id="roadmapTab" class="tab-button flex-1 text-center">Roadmap</button>
             <button id="tracTab" class="tab-button flex-1 text-center">Trac</button>
         </div>
 
@@ -460,6 +517,37 @@
             </div>
             <div id="todoCategoriesList" class="space-y-6">
                 <!-- To-Do categories and sub-tasks will be generated here by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Roadmap Content -->
+        <div id="roadmapContent" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Daily Roadmap</h2>
+            <div class="mb-4 flex items-center justify-between">
+                <label for="roadmapDateSelector" class="font-medium text-gray-700">View Date:</label>
+                <select id="roadmapDateSelector" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="today">Today</option>
+                </select>
+            </div>
+            <!-- Sub-tab Navigation for Roadmap -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="roadmapBotanySubTab" class="sub-tab-button active flex-1 text-center">Botany</button>
+                <button id="roadmapZoologySubTab" class="sub-tab-button flex-1 text-center">Zoology</button>
+                <button id="roadmapChemSubTab" class="sub-tab-button flex-1 text-center">Chemistry</button>
+                <button id="roadmapPhysSubTab" class="sub-tab-button flex-1 text-center">Physics</button>
+            </div>
+            <!-- Roadmap Sub-tab Content -->
+            <div id="roadmapBotanyContent" class="sub-tab-content active">
+                <div class="roadmap-grid" id="botanyRoadmapGrid"></div>
+            </div>
+            <div id="roadmapZoologyContent" class="sub-tab-content">
+                <div class="roadmap-grid" id="zoologyRoadmapGrid"></div>
+            </div>
+            <div id="roadmapChemContent" class="sub-tab-content">
+                <div class="roadmap-grid" id="chemistryRoadmapGrid"></div>
+            </div>
+            <div id="roadmapPhysContent" class="sub-tab-content">
+                <div class="roadmap-grid" id="physicsRoadmapGrid"></div>
             </div>
         </div>
 
@@ -530,18 +618,22 @@
         // --- Main Tab Switching Logic ---
         const dailyTrackerTab = document.getElementById('dailyTrackerTab');
         const todoListTab = document.getElementById('todoListTab');
+        const roadmapTab = document.getElementById('roadmapTab');
         const tracTab = document.getElementById('tracTab');
         const dailyTrackerContent = document.getElementById('dailyTrackerContent');
         const todoListContent = document.getElementById('todoListContent');
+        const roadmapContent = document.getElementById('roadmapContent');
         const tracContent = document.getElementById('tracContent');
 
         function showMainTab(tabId) {
             // Remove 'active' class from all main tabs and content
             dailyTrackerTab.classList.remove('active');
             todoListTab.classList.remove('active');
+            roadmapTab.classList.remove('active');
             tracTab.classList.remove('active');
             dailyTrackerContent.classList.remove('active');
             todoListContent.classList.remove('active');
+            roadmapContent.classList.remove('active');
             tracContent.classList.remove('active');
 
             // Add 'active' class to the selected main tab and content
@@ -552,6 +644,10 @@
                 todoListTab.classList.add('active');
                 todoListContent.classList.add('active');
                 renderTodoCategories(); // Re-render To-Do list when tab is active
+            } else if (tabId === 'roadmap') {
+                roadmapTab.classList.add('active');
+                roadmapContent.classList.add('active');
+                showRoadmapSubTab('botany');
             } else if (tabId === 'trac') {
                 tracTab.classList.add('active');
                 tracContent.classList.add('active');
@@ -562,6 +658,7 @@
 
         dailyTrackerTab.addEventListener('click', () => showMainTab('dailyTracker'));
         todoListTab.addEventListener('click', () => showMainTab('todoList'));
+        roadmapTab.addEventListener('click', () => showMainTab('roadmap'));
         tracTab.addEventListener('click', () => showMainTab('trac'));
 
         // --- Daily Tracker Logic ---
@@ -881,10 +978,20 @@
             if (category.isRunning) {
                 stopCategoryTimer(categoryId);
             } else {
+                stopAllOtherTimers(categoryId); // Stop any other running timers first
                 startCategoryTimer(categoryId);
             }
             saveTodoCategories(); // Save state change
             renderTodoCategories(); // Re-render to update button icon and timer
+        }
+
+        // Function to stop all timers except the specified one
+        function stopAllOtherTimers(excludedCategoryId) {
+            todoCategories.forEach(category => {
+                if (category.id !== excludedCategoryId && category.isRunning) {
+                    stopCategoryTimer(category.id);
+                }
+            });
         }
 
         // Function to start a timer for a specific category
@@ -969,6 +1076,197 @@
             category.subTasks = category.subTasks.filter(st => st.id !== subTaskId);
             saveTodoCategories();
             renderTodoCategories();
+        }
+
+
+        // --- Roadmap Tab Logic ---
+        const LOCAL_STORAGE_ROADMAP_KEY = 'roadmapData';
+        const LOCAL_STORAGE_ROADMAP_DAILY_KEY = 'roadmapDailyProgress';
+        const roadmapDateSelector = document.getElementById('roadmapDateSelector');
+
+        const roadmapSubTabs = {
+            botany: {
+                content: document.getElementById('roadmapBotanyContent'),
+                tab: document.getElementById('roadmapBotanySubTab'),
+                grid: document.getElementById('botanyRoadmapGrid'),
+            },
+            zoology: {
+                content: document.getElementById('roadmapZoologyContent'),
+                tab: document.getElementById('roadmapZoologySubTab'),
+                grid: document.getElementById('zoologyRoadmapGrid'),
+            },
+            chemistry: {
+                content: document.getElementById('roadmapChemContent'),
+                tab: document.getElementById('roadmapChemSubTab'),
+                grid: document.getElementById('chemistryRoadmapGrid'),
+            },
+            physics: {
+                content: document.getElementById('roadmapPhysContent'),
+                tab: document.getElementById('roadmapPhysSubTab'),
+                grid: document.getElementById('physicsRoadmapGrid'),
+            }
+        };
+
+        const defaultRoadmapData = {
+            // Updated to include 5 new empty columns
+            columnNames: {
+                botany: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""],
+                zoology: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""],
+                chemistry: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""],
+                physics: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""]
+            },
+            // Updated to be a 5x10 grid, so 50 progress items
+            dailyProgress: {
+                botany: Array(50).fill(false),
+                zoology: Array(50).fill(false),
+                chemistry: Array(50).fill(false),
+                physics: Array(50).fill(false),
+            },
+            history: {}
+        };
+
+        let roadmapData = {};
+        let activeRoadmapSubject = 'botany';
+
+        function loadRoadmapData() {
+            const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_ROADMAP_KEY));
+            if (storedData) {
+                // Merge stored data with defaults to handle new columns
+                roadmapData = {
+                    ...JSON.parse(JSON.stringify(defaultRoadmapData)), // Start with fresh defaults
+                    ...storedData,
+                    columnNames: {
+                        ...defaultRoadmapData.columnNames,
+                        ...storedData.columnNames
+                    },
+                    dailyProgress: {
+                        ...defaultRoadmapData.dailyProgress,
+                        ...storedData.dailyProgress
+                    }
+                };
+            } else {
+                roadmapData = JSON.parse(JSON.stringify(defaultRoadmapData)); // Deep copy
+                saveRoadmapData();
+            }
+            populateDateSelector();
+            checkAndResetRoadmap();
+        }
+
+        function saveRoadmapData() {
+            localStorage.setItem(LOCAL_STORAGE_ROADMAP_KEY, JSON.stringify(roadmapData));
+            console.log('Roadmap data saved locally.');
+        }
+
+        function checkAndResetRoadmap() {
+            const today = new Date().toDateString();
+            const lastResetDate = roadmapData.lastResetDate;
+
+            if (lastResetDate !== today) {
+                // Save today's progress to history before resetting
+                if (roadmapData.dailyProgress) {
+                    roadmapData.history[lastResetDate] = roadmapData.dailyProgress;
+                }
+
+                // Reset daily progress for all subjects
+                for (const subject in defaultRoadmapData.dailyProgress) {
+                    // Reset to the size of the new 10-column grid
+                    roadmapData.dailyProgress[subject] = Array(50).fill(false);
+                }
+
+                roadmapData.lastResetDate = today;
+                saveRoadmapData();
+                populateDateSelector();
+            }
+        }
+
+        function populateDateSelector() {
+            roadmapDateSelector.innerHTML = '<option value="today">Today</option>';
+            const historyDates = Object.keys(roadmapData.history).sort((a, b) => new Date(b) - new Date(a));
+            historyDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                roadmapDateSelector.appendChild(option);
+            });
+        }
+        
+        roadmapDateSelector.addEventListener('change', () => {
+            renderRoadmap(activeRoadmapSubject);
+        });
+
+        function showRoadmapSubTab(subject) {
+            activeRoadmapSubject = subject;
+            // Deactivate all sub-tabs and contents
+            for (const key in roadmapSubTabs) {
+                roadmapSubTabs[key].tab.classList.remove('active');
+                roadmapSubTabs[key].content.classList.remove('active');
+            }
+            // Activate the selected sub-tab and content
+            roadmapSubTabs[subject].tab.classList.add('active');
+            roadmapSubTabs[subject].content.classList.add('active');
+            // Render the grid for the selected subject
+            renderRoadmap(subject);
+        }
+
+        // Add listeners for roadmap sub-tabs
+        for (const subject in roadmapSubTabs) {
+            roadmapSubTabs[subject].tab.addEventListener('click', () => showRoadmapSubTab(subject));
+        }
+
+        function renderRoadmap(subject) {
+            const gridContainer = roadmapSubTabs[subject].grid;
+            gridContainer.innerHTML = '';
+            
+            const selectedDate = roadmapDateSelector.value;
+            const progressData = selectedDate === 'today' ? roadmapData.dailyProgress : roadmapData.history[selectedDate] || defaultRoadmapData.dailyProgress;
+            const columnNames = roadmapData.columnNames[subject];
+
+            // Renders a 5x10 grid (5 rows, 10 columns)
+            for (let col = 0; col < 10; col++) { // Changed from 5 to 10 columns
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'roadmap-column';
+                
+                const header = document.createElement('div');
+                header.className = 'roadmap-column-header';
+                header.textContent = columnNames[col] || '';
+                header.contentEditable = selectedDate === 'today'; // Only editable for "Today"
+                header.dataset.col = col;
+                header.addEventListener('blur', (e) => {
+                    const newName = e.target.textContent.trim();
+                    if (newName) {
+                        roadmapData.columnNames[subject][e.target.dataset.col] = newName;
+                        saveRoadmapData();
+                    } else {
+                        // Revert if empty
+                        e.target.textContent = roadmapData.columnNames[subject][e.target.dataset.col];
+                    }
+                });
+                header.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') e.preventDefault();
+                });
+                columnDiv.appendChild(header);
+
+                for (let row = 0; row < 1; row++) {
+                    // The calculation for the index remains the same: col * num_rows + row
+                    const index = col * 1 + row;
+                    const gridItem = document.createElement('div');
+                    gridItem.className = 'roadmap-grid-item';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = progressData[subject][index];
+                    checkbox.disabled = selectedDate !== 'today'; // Disable for historical view
+                    checkbox.dataset.index = index;
+                    checkbox.addEventListener('change', (e) => {
+                        roadmapData.dailyProgress[subject][e.target.dataset.index] = e.target.checked;
+                        saveRoadmapData();
+                    });
+
+                    gridItem.appendChild(checkbox);
+                    columnDiv.appendChild(gridItem);
+                }
+                gridContainer.appendChild(columnDiv);
+            }
         }
 
         // --- Trac Tab Logic ---
@@ -1361,6 +1659,7 @@
         window.onload = function() {
             checkAndResetDailyTracker();
             loadTodoCategories(); // Load new To-Do data structure
+            loadRoadmapData(); // Load roadmap data and perform daily reset check
             loadTracData();
             showMainTab('dailyTracker');
         };
@@ -1370,6 +1669,7 @@
             saveDailyTrackerData();
             saveTodoCategories(); // Save new To-Do data structure
             saveTracData();
+            saveRoadmapData();
         });
     </script>
 </body>

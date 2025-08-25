@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Tracker & To-Do List</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the app */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #eff6ff; /* Very light sky blue background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better scrolling */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); /* Softer shadow */
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            color: #6b7280; /* Gray text */
+        }
+        .tab-button.active {
+            color: #3b82f6; /* Sky blue for active tab */
+            border-color: #3b82f6;
+            background-color: #e0f2fe; /* Lighter sky blue background for active tab */
+        }
+        .tab-button:hover:not(.active) {
+            background-color: #f0f9ff; /* Lighter hover background */
+            color: #1f2937;
+        }
+        .tab-content {
+            padding: 2rem;
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        input[type="text"], textarea {
+            border: 1px solid #e0e7eb; /* Lighter border */
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6; /* Sky blue focus */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Focus ring */
+        }
+        button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* Sky blue */
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb; /* Darker sky blue */
+        }
+        .btn-secondary {
+            background-color: #9ca3af; /* Gray */
+            color: #ffffff;
+        }
+        .btn-secondary:hover {
+            background-color: #6b7280; /* Darker gray */
+        }
+        .btn-success {
+            background-color: #10b981; /* Emerald */
+            color: #ffffff;
+        }
+        .btn-success:hover {
+            background-color: #059669; /* Darker emerald */
+        }
+        .btn-danger {
+            background-color: #ef4444; /* Red */
+            color: #ffffff;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626; /* Darker red */
+        }
+        .daily-entry {
+            display: flex;
+            align-items: center;
+            space-x-4 p-3 bg-gray-50 rounded-lg shadow-sm;
+            background-color: #f8fafc; /* Very light gray */
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .time-display {
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background-color: #e0f2fe; /* Light sky blue */
+            transition: background-color 0.2s ease;
+            color: #1f2937;
+        }
+        .time-display:hover {
+            background-color: #bfdbfe; /* Slightly darker */
+        }
+
+        /* Trac Tab Specific Styles */
+        .trac-subject {
+            /* No individual border/shadow for subject sections when using sub-tabs */
+            padding: 0; /* Remove padding as content is handled by sub-tab-content */
+            margin-bottom: 0;
+            background-color: transparent;
+            box-shadow: none;
+        }
+        .trac-table-container {
+            overflow-x: auto; /* Allows horizontal scrolling for the table */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            border-radius: 8px; /* Apply border-radius to container */
+            border: 1px solid #e0e7eb; /* Apply border to container */
+        }
+        .trac-table {
+            width: 100%; /* Default to 100% width */
+            min-width: 700px; /* Minimum width to prevent excessive squeezing on smaller screens */
+            border-collapse: collapse;
+            margin-top: 0; /* Remove margin as container has padding */
+        }
+        .trac-table th, .trac-table td {
+            border: 1px solid #e0e7eb;
+            padding: 0.75rem;
+            text-align: left;
+            white-space: nowrap; /* Prevent text wrapping in table headers/cells */
+        }
+        .trac-table th {
+            background-color: #e0f2fe; /* Light sky blue */
+            font-weight: 600;
+            color: #3b82f6; /* Sky blue */
+            position: relative; /* For delete button positioning */
+        }
+        .trac-table td {
+            background-color: #ffffff;
+            color: #374151;
+        }
+        .trac-table tr:nth-child(even) td {
+            background-color: #fbfdff; /* Very light blue tint */
+        }
+        .trac-table input[type="checkbox"] {
+            transform: scale(1.2);
+            margin: 0 auto;
+            display: block;
+            accent-color: #3b82f6; /* Sky blue checkbox */
+        }
+        .trac-table th[contenteditable="true"] {
+            cursor: text;
+            outline: none; /* Remove default focus outline */
+        }
+        .trac-table th[contenteditable="true"]:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Custom focus ring */
+            background-color: #e0f2fe; /* Keep active background on focus */
+        }
+        .trac-table th .delete-column-btn {
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+            padding: 0.2rem; /* Make clickable area larger */
+        }
+        .trac-table th .delete-column-btn:hover {
+            opacity: 1;
+        }
+        /* Hide delete button for non-editable/non-deletable columns */
+        .trac-table th:not([data-column-key^="customCol_"]) .delete-column-btn {
+            display: none;
+        }
+
+
+        /* Sub-tab styles for Trac */
+        .sub-tab-button {
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            color: #4b5563;
+        }
+        .sub-tab-button.active {
+            color: #3b82f6;
+            border-color: #3b82f6;
+            background-color: #e0f2fe;
+            border-radius: 6px 6px 0 0;
+        }
+        .sub-tab-button:hover:not(.active) {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .sub-tab-content {
+            padding-top: 1.5rem;
+            display: none;
+            background-color: #f8fafc; /* Consistent background for content */
+            border-radius: 0 0 12px 12px; /* Rounded bottom corners */
+            padding: 1.5rem; /* Padding for the content inside */
+            border: 1px solid #e0e7eb;
+            border-top: none; /* No top border as it connects to tab bar */
+        }
+        .sub-tab-content.active {
+            display: block;
+        }
+
+        /* To-Do List Styles (from previous iteration - kept for other tabs) */
+        .todo-category-item {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            border: 1px solid #e0e7eb;
+        }
+        .todo-category-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .todo-category-header .play-icon-wrapper {
+            background-color: #dcfce7;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .todo-category-header .play-icon {
+            color: #22c55e;
+            width: 16px;
+            height: 16px;
+        }
+        .todo-category-header .category-name {
+            flex-grow: 1;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .todo-category-header .timer-display {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #374151;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .todo-category-header .action-icons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .todo-category-header .action-icons svg {
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: #9ca3af;
+        }
+        .todo-category-header .action-icons svg:hover {
+            color: #6b7280;
+        }
+
+        .todo-subtasks-list {
+            padding: 0.5rem 1.5rem 1rem;
+        }
+        .todo-subtask-item {
+            display: flex;
+            align-items: center;
+            padding: 0.4rem 0;
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-left: 2.5rem;
+        }
+        .todo-subtask-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            transform: scale(1.1);
+            accent-color: #3b82f6;
+            border-radius: 44px;
+            flex-shrink: 0;
+        }
+        .todo-subtask-item.completed {
+            color: #9ca3af;
+            text-decoration: line-through;
+        }
+        .todo-subtask-item.completed input[type="checkbox"] {
+            opacity: 0.7;
+        }
+        .todo-subtask-item .subtask-text {
+            flex-grow: 1;
+        }
+        .todo-subtask-item .delete-subtask-btn {
+            background-color: transparent;
+            color: #ef4444;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            margin-left: 0.5rem;
+        }
+        .todo-subtask-item:hover .delete-subtask-btn {
+            opacity: 1;
+        }
+        .add-subtask-form {
+            display: flex;
+            margin-top: 0.5rem;
+            padding: 0 1.5rem 1rem;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1rem;
+        }
+        .add-subtask-form input {
+            flex-grow: 1;
+            margin-right: 0.75rem;
+            font-size: 0.9rem;
+            padding: 0.6rem 0.8rem;
+        }
+        .add-subtask-form button {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Roadmap Specific Styles */
+        .roadmap-grid {
+            /* This is the key change to support 10 columns */
+            grid-template-columns: repeat(10, 1fr); /* 10 columns for each sub-grid */
+            gap: 1.5rem;
+            display: grid; /* Ensure this is set for grid layout */
+            overflow-x: auto; /* Allow horizontal scrolling if needed */
+        }
+        .roadmap-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .roadmap-column-header {
+            background-color: #e0f2fe;
+            color: #3b82f6;
+            font-weight: 600;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            cursor: text;
+            white-space: nowrap; /* Prevent wrapping in headers */
+        }
+        .roadmap-column-header:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .roadmap-grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8fafc;
+            border: 1px solid #e0e7eb;
+            border-radius: 6px;
+            height: 40px; /* Fixed height for squares */
+        }
+        .roadmap-grid-item input[type="checkbox"] {
+            transform: scale(1.2);
+            accent-color: #3b82f6;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            }
+            .tab-button {
+                padding: 0.75rem 0.5rem; /* Smaller padding for tabs */
+                font-size: 0.8rem; /* Smaller font size for tabs */
+            }
+            .tab-content {
+                padding: 1.5rem;
+            }
+            .daily-entry {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .daily-entry .time-display {
+                margin-bottom: 0.5rem;
+            }
+            .trac-table th, .trac-table td {
+                padding: 0.4rem 0.3rem; /* More compact padding for table cells */
+                font-size: 0.75rem; /* Smaller font size for table content */
+            }
+            .trac-table th:nth-child(1), .trac-table td:nth-child(1) {
+                width: auto; /* Let content dictate width */
+            }
+            .trac-table th:not(:nth-child(1)), .trac-table td:not(:nth-child(1)) {
+                width: auto; /* Let content dictate width */
+                text-align: center;
+            }
+            .trac-table input[type="checkbox"] {
+                transform: scale(1); /* Slightly smaller checkboxes */
+            }
+            .sub-tab-button {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            .todo-category-header {
+                flex-wrap: wrap;
+                padding: 0.75rem 1rem;
+            }
+            .todo-category-header .category-name {
+                width: 100%;
+                margin-bottom: 0.5rem;
+                font-size: 1rem;
+            }
+            .todo-category-header .play-icon-wrapper {
+                width: 28px;
+                height: 28px;
+            }
+            .todo-category-header .play-icon {
+                width: 14px;
+                height: 14px;
+            }
+            .todo-category-header .timer-display,
+            .todo-category-header .action-icons {
+                margin-right: 0.5rem;
+                font-size: 0.9rem;
+            }
+            .todo-subtasks-list {
+                padding: 0.75rem 1rem;
+            }
+            .todo-subtask-item {
+                margin-left: 2rem; /* Adjust indent for mobile */
+            }
+            .add-subtask-form {
+                padding: 0 1rem 0.75rem;
+            }
+            /* Adjust input and button sizes for mobile forms */
+            .flex.mb-4.space-x-3 input,
+            .flex.mb-4.space-x-3 button,
+            .flex.items-center.space-x-3.mb-4 input,
+            .flex.items-center.space-x-3.mb-4 button {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .roadmap-grid {
+                grid-template-columns: repeat(2, 1fr); /* Revert to 2 columns on mobile for better visibility */
+                gap: 1rem;
+            }
+            .roadmap-column-header {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+            .roadmap-grid-item {
+                height: 32px;
+            }
+            .roadmap-grid-item input[type="checkbox"] {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 bg-gray-50 rounded-t-lg">
+            <button id="dailyTrackerTab" class="tab-button flex-1 text-center">Daily Tracker</button>
+            <button id="todoListTab" class="tab-button flex-1 text-center">To-Do List</button>
+            <button id="roadmapTab" class="tab-button flex-1 text-center">Roadmap</button>
+            <button id="tracTab" class="tab-button flex-1 text-center">Trac</button>
+        </div>
+
+        <!-- Daily Tracker Content -->
+        <div id="dailyTrackerContent" class="tab-content active">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Daily Happenings</h2>
+            <div id="dailyEntries" class="space-y-4">
+                <!-- Daily entries will be generated here by JavaScript -->
+            </div>
+            <button id="saveDailyTracker" class="btn-primary mt-8 w-full">Save Daily Happenings</button>
+        </div>
+
+        <!-- To-Do List Content -->
+        <div id="todoListContent" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">My To-Do List</h2>
+            <div class="flex mb-6 space-x-3">
+                <input type="text" id="newTodoCategoryInput" placeholder="Add a new main task..." class="flex-1">
+                <button id="addTodoCategoryButton" class="btn-primary">Add Task</button>
+            </div>
+            <div id="todoCategoriesList" class="space-y-6">
+                <!-- To-Do categories and sub-tasks will be generated here by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Roadmap Content -->
+        <div id="roadmapContent" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Daily Roadmap</h2>
+            <div class="mb-4 flex items-center justify-between">
+                <label for="roadmapDateSelector" class="font-medium text-gray-700">View Date:</label>
+                <select id="roadmapDateSelector" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="today">Today</option>
+                </select>
+            </div>
+            <!-- Sub-tab Navigation for Roadmap -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="roadmapBotanySubTab" class="sub-tab-button active flex-1 text-center">Botany</button>
+                <button id="roadmapZoologySubTab" class="sub-tab-button flex-1 text-center">Zoology</button>
+                <button id="roadmapChemSubTab" class="sub-tab-button flex-1 text-center">Chemistry</button>
+                <button id="roadmapPhysSubTab" class="sub-tab-button flex-1 text-center">Physics</button>
+            </div>
+            <!-- Roadmap Sub-tab Content -->
+            <div id="roadmapBotanyContent" class="sub-tab-content active">
+                <div class="roadmap-grid" id="botanyRoadmapGrid"></div>
+            </div>
+            <div id="roadmapZoologyContent" class="sub-tab-content">
+                <div class="roadmap-grid" id="zoologyRoadmapGrid"></div>
+            </div>
+            <div id="roadmapChemContent" class="sub-tab-content">
+                <div class="roadmap-grid" id="chemistryRoadmapGrid"></div>
+            </div>
+            <div id="roadmapPhysContent" class="sub-tab-content">
+                <div class="roadmap-grid" id="physicsRoadmapGrid"></div>
+            </div>
+        </div>
+
+        <!-- Trac Tab Content -->
+        <div id="tracContent" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">My Study Tracker</h2>
+
+            <!-- Sub-tab Navigation for Trac -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="tracBioSubTab" class="sub-tab-button active flex-1 text-center">Biology</button>
+                <button id="tracChemSubTab" class="sub-tab-button flex-1 text-center">Chemistry</button>
+                <button id="tracPhysSubTab" class="sub-tab-button flex-1 text-center">Physics</button>
+            </div>
+
+            <!-- Biology Sub-tab Content -->
+            <div id="tracBioContent" class="sub-tab-content active trac-subject">
+                <div class="flex mb-4 space-x-3">
+                    <input type="text" id="newBioChapterInput" placeholder="Add Biology Chapter Name..." class="flex-1">
+                    <button id="addBioChapterButton" class="btn-primary">Add Chapter</button>
+                </div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <input type="text" id="newTracColumnInput" placeholder="Add custom column name..." class="flex-1">
+                    <button id="addTracColumnButton" class="btn-secondary">Add Custom Column</button>
+                </div>
+                <div id="bioChapters" class="trac-table-container">
+                    <!-- Biology chapters will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Chemistry Sub-tab Content -->
+            <div id="tracChemContent" class="sub-tab-content trac-subject">
+                <div class="flex mb-4 space-x-3">
+                    <input type="text" id="newChemChapterInput" placeholder="Add Chemistry Chapter Name..." class="flex-1">
+                    <button id="addChemChapterButton" class="btn-primary">Add Chapter</button>
+                </div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <input type="text" id="newTracColumnInputChem" placeholder="Add custom column name..." class="flex-1">
+                    <button id="addTracColumnButtonChem" class="btn-secondary">Add Custom Column</button>
+                </div>
+                <div id="chemChapters" class="trac-table-container">
+                    <!-- Chemistry chapters will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Physics Sub-tab Content -->
+            <div id="tracPhysContent" class="sub-tab-content trac-subject">
+                <div class="flex mb-4 space-x-3">
+                    <input type="text" id="newPhysChapterInput" placeholder="Add Physics Chapter Name..." class="flex-1">
+                    <button id="addPhysChapterButton" class="btn-primary">Add Chapter</button>
+                </div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <input type="text" id="newTracColumnInputPhys" placeholder="Add custom column name..." class="flex-1">
+                    <button id="addTracColumnButtonPhys" class="btn-secondary">Add Custom Column</button>
+                </div>
+                <div id="physChapters" class="trac-table-container">
+                    <!-- Physics chapters will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables for Firebase config (not used, but required by environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- Main Tab Switching Logic ---
+        const dailyTrackerTab = document.getElementById('dailyTrackerTab');
+        const todoListTab = document.getElementById('todoListTab');
+        const roadmapTab = document.getElementById('roadmapTab');
+        const tracTab = document.getElementById('tracTab');
+        const dailyTrackerContent = document.getElementById('dailyTrackerContent');
+        const todoListContent = document.getElementById('todoListContent');
+        const roadmapContent = document.getElementById('roadmapContent');
+        const tracContent = document.getElementById('tracContent');
+
+        function showMainTab(tabId) {
+            // Remove 'active' class from all main tabs and content
+            dailyTrackerTab.classList.remove('active');
+            todoListTab.classList.remove('active');
+            roadmapTab.classList.remove('active');
+            tracTab.classList.remove('active');
+            dailyTrackerContent.classList.remove('active');
+            todoListContent.classList.remove('active');
+            roadmapContent.classList.remove('active');
+            tracContent.classList.remove('active');
+
+            // Add 'active' class to the selected main tab and content
+            if (tabId === 'dailyTracker') {
+                dailyTrackerTab.classList.add('active');
+                dailyTrackerContent.classList.add('active');
+            } else if (tabId === 'todoList') {
+                todoListTab.classList.add('active');
+                todoListContent.classList.add('active');
+                renderTodoCategories(); // Re-render To-Do list when tab is active
+            } else if (tabId === 'roadmap') {
+                roadmapTab.classList.add('active');
+                roadmapContent.classList.add('active');
+                showRoadmapSubTab('botany');
+            } else if (tabId === 'trac') {
+                tracTab.classList.add('active');
+                tracContent.classList.add('active');
+                // When Trac tab is shown, ensure a sub-tab is also active and rendered
+                showTracSubTab('bio'); // Default to Biology sub-tab
+            }
+        }
+
+        dailyTrackerTab.addEventListener('click', () => showMainTab('dailyTracker'));
+        todoListTab.addEventListener('click', () => showMainTab('todoList'));
+        roadmapTab.addEventListener('click', () => showMainTab('roadmap'));
+        tracTab.addEventListener('click', () => showMainTab('trac'));
+
+        // --- Daily Tracker Logic ---
+        const dailyEntriesDiv = document.getElementById('dailyEntries');
+        const saveDailyTrackerButton = document.getElementById('saveDailyTracker');
+        const LOCAL_STORAGE_DAILY_KEY = 'dailyTrackerData';
+        const LOCAL_STORAGE_DAILY_RESET_DATE_KEY = 'lastDailyTrackerResetDate';
+
+        // Function to check and reset daily tracker at 12 AM
+        function checkAndResetDailyTracker() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set to start of today
+            const lastResetDateStr = localStorage.getItem(LOCAL_STORAGE_DAILY_RESET_DATE_KEY);
+            let lastResetDate = null;
+
+            if (lastResetDateStr) {
+                lastResetDate = new Date(lastResetDateStr);
+                lastResetDate.setHours(0, 0, 0, 0); // Set to start of the stored date
+            }
+
+            // If no last reset date or if it's a new day, reset the tracker
+            if (!lastResetDate || today.getTime() > lastResetDate.getTime()) {
+                localStorage.removeItem(LOCAL_STORAGE_DAILY_KEY); // Clear daily data
+                localStorage.setItem(LOCAL_STORAGE_DAILY_RESET_DATE_KEY, today.toDateString()); // Update reset date
+                console.log('Daily Tracker reset for a new day.');
+            }
+            initializeDailyTracker(); // Always initialize/re-initialize
+        }
+
+        function initializeDailyTracker() {
+            dailyEntriesDiv.innerHTML = '';
+            const savedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_DAILY_KEY)) || {};
+
+            for (let i = 5; i <= 24; i++) {
+                const hour = i === 24 ? 0 : i;
+                const displayHour = hour === 0 ? '12 AM' : (hour > 12 ? `${hour - 12} PM` : `${hour} AM`);
+                const key = `hour-${i}`;
+
+                const entryData = savedData[key] || { time: displayHour, activity: '' };
+
+                const dailyEntry = document.createElement('div');
+                dailyEntry.className = 'daily-entry flex items-center space-x-4';
+                dailyEntry.dataset.key = key;
+
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'time-display text-gray-700 font-medium whitespace-nowrap';
+                timeSpan.textContent = entryData.time;
+                timeSpan.contentEditable = true;
+                timeSpan.title = 'Click to edit time';
+
+                const activityInput = document.createElement('input');
+                activityInput.type = 'text';
+                activityInput.className = 'flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500';
+                activityInput.placeholder = `What happened at ${entryData.time}?`;
+                activityInput.value = entryData.activity;
+
+                dailyEntry.appendChild(timeSpan);
+                dailyEntry.appendChild(activityInput);
+                dailyEntriesDiv.appendChild(dailyEntry);
+
+                timeSpan.addEventListener('input', saveDailyTrackerData);
+                activityInput.addEventListener('input', saveDailyTrackerData);
+            }
+        }
+
+        function saveDailyTrackerData() {
+            const dataToSave = {};
+            document.querySelectorAll('.daily-entry').forEach(entryDiv => {
+                const key = entryDiv.dataset.key;
+                const time = entryDiv.querySelector('.time-display').textContent.trim();
+                const activity = entryDiv.querySelector('input[type="text"]').value.trim();
+                dataToSave[key] = { time, activity };
+            });
+            localStorage.setItem(LOCAL_STORAGE_DAILY_KEY, JSON.stringify(dataToSave));
+            console.log('Daily tracker data saved locally.');
+        }
+
+        saveDailyTrackerButton.addEventListener('click', saveDailyTrackerData);
+
+        // --- To-Do List Logic ---
+        const newTodoCategoryInput = document.getElementById('newTodoCategoryInput');
+        const addTodoCategoryButton = document.getElementById('addTodoCategoryButton');
+        const todoCategoriesListDiv = document.getElementById('todoCategoriesList');
+        const LOCAL_STORAGE_TODO_KEY = 'todoListData';
+        let todoCategories = []; // Array to hold task categories
+
+        // Utility function to format time (HH:MM:SS)
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            return [hours, minutes, seconds]
+                .map(unit => String(unit).padStart(2, '0'))
+                .join(':');
+        }
+
+        // Function to load To-Do categories from local storage
+        function loadTodoCategories() {
+            const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_TODO_KEY));
+            if (storedData) {
+                todoCategories = storedData;
+                // Restart timers if any were running when the page was closed
+                todoCategories.forEach(category => {
+                    if (category.isRunning) {
+                        startCategoryTimer(category.id);
+                    }
+                });
+            }
+        }
+
+        // Function to save To-Do categories to local storage
+        function saveTodoCategories() {
+            // Before saving, ensure all running timers' elapsed time is updated
+            todoCategories.forEach(category => {
+                if (category.isRunning) {
+                    category.elapsedTime += (Date.now() - category.startTime);
+                    category.startTime = Date.now(); // Reset start time for next interval
+                }
+            });
+            localStorage.setItem(LOCAL_STORAGE_TODO_KEY, JSON.stringify(todoCategories));
+            console.log('To-Do list data saved locally.');
+        }
+
+        // Function to render To-Do categories and their sub-tasks
+        function renderTodoCategories() {
+            todoCategoriesListDiv.innerHTML = ''; // Clear existing content
+
+            if (todoCategories.length === 0) {
+                todoCategoriesListDiv.innerHTML = `<p class="text-gray-500 text-center py-4">No task categories added yet. Add one above!</p>`;
+                return;
+            }
+
+            todoCategories.forEach(category => {
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'todo-category-item';
+                categoryItem.dataset.categoryId = category.id;
+
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'todo-category-header';
+
+                // Play/Pause SVG Icon
+                const playIconWrapper = document.createElement('div');
+                playIconWrapper.className = 'play-icon-wrapper';
+                const playIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                playIcon.setAttribute("viewBox", "0 0 24 24");
+                playIcon.setAttribute("fill", "currentColor");
+                playIcon.className = "play-icon";
+                playIcon.innerHTML = category.isRunning ? `
+                    <path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V5.25Z" clip-rule="evenodd" />
+                ` : `
+                    <path d="M5.25 5.653c0-.856.917-1.36 1.66-1.002l11.26 5.63a1.5 1.5 0 0 1 0 2.694l-11.26 5.63C6.167 20.363 5.25 19.859 5.25 19.003V5.653Z" />
+                `;
+                playIconWrapper.appendChild(playIcon);
+                playIconWrapper.addEventListener('click', () => toggleCategoryTimer(category.id));
+
+
+                const categoryName = document.createElement('span');
+                categoryName.className = 'category-name';
+                categoryName.textContent = category.name;
+
+                const timerDisplay = document.createElement('span');
+                timerDisplay.className = 'timer-display';
+                timerDisplay.textContent = formatTime(category.elapsedTime);
+
+                const actionIconsDiv = document.createElement('div');
+                actionIconsDiv.className = 'action-icons';
+
+                // Reset Timer SVG Icon
+                const resetIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                resetIcon.setAttribute("viewBox", "0 0 24 24");
+                resetIcon.setAttribute("fill", "currentColor");
+                resetIcon.className = "reset-icon";
+                resetIcon.innerHTML = `
+                    <path fill-rule="evenodd" d="M16.03 4.47A.75.75 0 0 1 18 5.25v1.5a.75.75 0 0 1-1.5 0V5.922l-3.03 3.03a.75.75 0 1 1-1.06-1.06l3.03-3.03H16.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M8.47 19.53a.75.75 0 0 1 0-1.06l3.03-3.03H7.5a.75.75 0 0 1-.75-.75v-1.5a.75.75 0 0 1 1.5 0v.828l3.03-3.03a.75.75 0 1 1 1.06 1.06l-3.03 3.03H16.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-.828l-3.03 3.03a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" />
+                `;
+                resetIcon.addEventListener('click', () => resetCategoryTimer(category.id));
+
+
+                // Edit SVG Icon (Placeholder functionality for now)
+                const editIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                editIcon.setAttribute("viewBox", "0 0 24 24");
+                editIcon.setAttribute("fill", "currentColor");
+                editIcon.className = "edit-icon";
+                editIcon.innerHTML = `
+                    <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14.25v4.75a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4.75" />
+                `;
+                editIcon.addEventListener('click', () => {
+                    // Placeholder for edit functionality
+                    console.log('Edit icon clicked for category:', category.name);
+                    // You could add a prompt here to rename the category or open a modal
+                });
+
+                // Delete SVG Icon
+                const deleteIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                deleteIcon.setAttribute("viewBox", "0 0 24 24");
+                deleteIcon.setAttribute("fill", "currentColor");
+                deleteIcon.className = "delete-icon";
+                deleteIcon.innerHTML = `
+                    <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 0 1 .5.715V18a.75.75 0 0 1-.75.75H5.625a.75.75 0 0 1-.75-.75V5.922a.75.75 0 0 1 .5-.715 48.815 48.815 0 0 1 3.878-.512V4.478c0-.414.336-.75.75-.75h3c.414 0 .75.336.75.75ZM9 6.75A.75.75 0 0 1 9.75 6h4.5a.75.75 0 0 1 .75.75v.75h-6V6.75ZM9 10.5a.75.75 0 0 1 .75-.75h.008v.008H9.75a.75.75 0 0 1-.75-.75ZM11.25 10.5a.75.75 0 0 1 .75-.75h.008v.008H11.25a.75.75 0 0 1-.75-.75ZM13.5 10.5a.75.75 0 0 1 .75-.75h.008v.008H13.5a.75.75 0 0 1-.75-.75ZM10.5 14.25a.75.75 0 0 1 .75-.75h.008v.008H10.5a.75.75 0 0 1-.75-.75ZM12.75 14.25a.75.75 0 0 1 .75-.75h.008v.008H12.75a.75.75 0 0 1-.75-.75ZM15 14.25a.75.75 0 0 1 .75-.75h.008v.008H15a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" />
+                `;
+                deleteIcon.addEventListener('click', () => deleteTodoCategory(category.id));
+
+                actionIconsDiv.appendChild(resetIcon); // Add reset icon
+                actionIconsDiv.appendChild(editIcon);
+                actionIconsDiv.appendChild(deleteIcon);
+
+                categoryHeader.appendChild(playIconWrapper);
+                categoryHeader.appendChild(categoryName);
+                categoryHeader.appendChild(timerDisplay);
+                categoryHeader.appendChild(actionIconsDiv);
+
+                const subtasksList = document.createElement('div');
+                subtasksList.className = 'todo-subtasks-list';
+
+                if (category.subTasks.length === 0) {
+                    const noSubtasks = document.createElement('p');
+                    noSubtasks.className = 'text-gray-500 text-sm text-center py-2';
+                    noSubtasks.textContent = 'No sub-tasks yet.';
+                    subtasksList.appendChild(noSubtasks);
+                } else {
+                    category.subTasks.forEach(subTask => {
+                        const subTaskItem = document.createElement('div');
+                        subTaskItem.className = `todo-subtask-item ${subTask.completed ? 'completed' : ''}`;
+                        subTaskItem.dataset.subTaskId = subTask.id;
+
+                        // Standard checkbox input
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = subTask.completed;
+                        checkbox.addEventListener('change', () => toggleSubTaskComplete(category.id, subTask.id));
+
+                        const subTaskText = document.createElement('span');
+                        subTaskText.className = 'subtask-text';
+                        subTaskText.textContent = subTask.text;
+
+                        const deleteSubTaskBtn = document.createElement('button');
+                        deleteSubTaskBtn.className = 'delete-subtask-btn';
+                        deleteSubTaskBtn.textContent = 'x';
+                        deleteSubTaskBtn.addEventListener('click', () => deleteSubTask(category.id, subTask.id));
+
+                        subTaskItem.appendChild(checkbox);
+                        subTaskItem.appendChild(subTaskText);
+                        subTaskItem.appendChild(deleteSubTaskBtn);
+                        subtasksList.appendChild(subTaskItem);
+                    });
+                }
+
+                // Add Sub-task form for each category
+                const addSubTaskForm = document.createElement('div');
+                addSubTaskForm.className = 'add-subtask-form';
+                const subTaskInput = document.createElement('input');
+                subTaskInput.type = 'text';
+                subTaskInput.placeholder = 'Add a sub-task...';
+                subTaskInput.className = 'flex-1';
+                const addSubTaskBtn = document.createElement('button');
+                addSubTaskBtn.className = 'btn-primary text-sm px-3 py-1';
+                addSubTaskBtn.textContent = 'Add';
+                addSubTaskBtn.addEventListener('click', () => addSubTask(category.id, subTaskInput));
+
+                addSubTaskForm.appendChild(subTaskInput);
+                addSubTaskForm.appendChild(addSubTaskBtn);
+
+
+                categoryItem.appendChild(categoryHeader);
+                categoryItem.appendChild(subtasksList);
+                categoryItem.appendChild(addSubTaskForm);
+                todoCategoriesListDiv.appendChild(categoryItem);
+            });
+        }
+
+        // Function to add a new To-Do category
+        addTodoCategoryButton.addEventListener('click', () => {
+            const categoryName = newTodoCategoryInput.value.trim();
+            if (categoryName) {
+                const newCategory = {
+                    id: Date.now(),
+                    name: categoryName,
+                    elapsedTime: 0,
+                    startTime: null,
+                    isRunning: false,
+                    intervalId: null,
+                    subTasks: []
+                };
+                todoCategories.push(newCategory);
+                newTodoCategoryInput.value = '';
+                saveTodoCategories();
+                renderTodoCategories();
+            }
+        });
+
+        // Function to add a sub-task to a specific category
+        function addSubTask(categoryId, inputElement) {
+            const subTaskText = inputElement.value.trim();
+            if (subTaskText) {
+                const category = todoCategories.find(cat => cat.id === categoryId);
+                if (category) {
+                    category.subTasks.push({
+                        id: Date.now(),
+                        text: subTaskText,
+                        completed: false
+                    });
+                    inputElement.value = '';
+                    saveTodoCategories();
+                    renderTodoCategories(); // Re-render to update the list
+                }
+            }
+        }
+
+        // Function to toggle category timer (start/stop)
+        function toggleCategoryTimer(categoryId) {
+            const category = todoCategories.find(cat => cat.id === categoryId);
+            if (!category) return;
+
+            if (category.isRunning) {
+                stopCategoryTimer(categoryId);
+            } else {
+                stopAllOtherTimers(categoryId); // Stop any other running timers first
+                startCategoryTimer(categoryId);
+            }
+            saveTodoCategories(); // Save state change
+            renderTodoCategories(); // Re-render to update button icon and timer
+        }
+
+        // Function to stop all timers except the specified one
+        function stopAllOtherTimers(excludedCategoryId) {
+            todoCategories.forEach(category => {
+                if (category.id !== excludedCategoryId && category.isRunning) {
+                    stopCategoryTimer(category.id);
+                }
+            });
+        }
+
+        // Function to start a timer for a specific category
+        function startCategoryTimer(categoryId) {
+            const category = todoCategories.find(cat => cat.id === categoryId);
+            if (!category || category.isRunning) return;
+
+            category.isRunning = true;
+            category.startTime = Date.now();
+
+            if (category.intervalId) {
+                clearInterval(category.intervalId);
+            }
+
+            category.intervalId = setInterval(() => {
+                const now = Date.now();
+                const elapsedSinceLastStart = now - category.startTime;
+                category.elapsedTime += elapsedSinceLastStart;
+                category.startTime = now;
+
+                // Update the display for this specific category
+                const categoryItem = document.querySelector(`div[data-category-id="${category.id}"]`);
+                if (categoryItem) {
+                    categoryItem.querySelector('.timer-display').textContent = formatTime(category.elapsedTime);
+                }
+            }, 1000); // Update every second
+        }
+
+        // Function to stop a timer for a specific category
+        function stopCategoryTimer(categoryId) {
+            const category = todoCategories.find(cat => cat.id === categoryId);
+            if (!category || !category.isRunning) return;
+
+            clearInterval(category.intervalId); // Stop the interval
+            category.isRunning = false;
+            category.elapsedTime += (Date.now() - category.startTime); // Add remaining time
+            category.startTime = null; // Clear start time
+            category.intervalId = null; // Clear interval ID
+        }
+
+        // Function to reset a timer for a specific category
+        function resetCategoryTimer(categoryId) {
+            const category = todoCategories.find(cat => cat.id === categoryId);
+            if (!category) return;
+
+            stopCategoryTimer(categoryId); // Stop if running
+            category.elapsedTime = 0; // Reset time
+            saveTodoCategories(); // Save reset state
+            renderTodoCategories(); // Re-render to update display
+        }
+
+        // Function to toggle sub-task completion status
+        function toggleSubTaskComplete(categoryId, subTaskId) {
+            const category = todoCategories.find(cat => cat.id === categoryId);
+            if (!category) return;
+
+            const subTask = category.subTasks.find(st => st.id === subTaskId);
+            if (subTask) {
+                subTask.completed = !subTask.completed;
+                saveTodoCategories();
+                renderTodoCategories(); // Re-render to update UI
+            }
+        }
+
+        // Function to delete a To-Do category
+        function deleteTodoCategory(categoryId) {
+            const categoryIndex = todoCategories.findIndex(cat => cat.id === categoryId);
+            if (categoryIndex > -1) {
+                // Stop timer before deleting category
+                stopCategoryTimer(categoryId);
+                todoCategories.splice(categoryIndex, 1);
+                saveTodoCategories();
+                renderTodoCategories();
+            }
+        }
+
+        // Function to delete a sub-task
+        function deleteSubTask(categoryId, subTaskId) {
+            const category = todoCategories.find(cat => cat.id === categoryId);
+            if (!category) return;
+
+            category.subTasks = category.subTasks.filter(st => st.id !== subTaskId);
+            saveTodoCategories();
+            renderTodoCategories();
+        }
+
+
+        // --- Roadmap Tab Logic ---
+        const LOCAL_STORAGE_ROADMAP_KEY = 'roadmapData';
+        const LOCAL_STORAGE_ROADMAP_DAILY_KEY = 'roadmapDailyProgress';
+        const roadmapDateSelector = document.getElementById('roadmapDateSelector');
+
+        const roadmapSubTabs = {
+            botany: {
+                content: document.getElementById('roadmapBotanyContent'),
+                tab: document.getElementById('roadmapBotanySubTab'),
+                grid: document.getElementById('botanyRoadmapGrid'),
+            },
+            zoology: {
+                content: document.getElementById('roadmapZoologyContent'),
+                tab: document.getElementById('roadmapZoologySubTab'),
+                grid: document.getElementById('zoologyRoadmapGrid'),
+            },
+            chemistry: {
+                content: document.getElementById('roadmapChemContent'),
+                tab: document.getElementById('roadmapChemSubTab'),
+                grid: document.getElementById('chemistryRoadmapGrid'),
+            },
+            physics: {
+                content: document.getElementById('roadmapPhysContent'),
+                tab: document.getElementById('roadmapPhysSubTab'),
+                grid: document.getElementById('physicsRoadmapGrid'),
+            }
+        };
+
+        const defaultRoadmapData = {
+            // Updated to include 5 new empty columns
+            columnNames: {
+                botany: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""],
+                zoology: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""],
+                chemistry: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""],
+                physics: ["Lecture", "Revision", "DPP", "Module", "", "", "", "", "", ""]
+            },
+            // Updated to be a 5x10 grid, so 50 progress items
+            dailyProgress: {
+                botany: Array(50).fill(false),
+                zoology: Array(50).fill(false),
+                chemistry: Array(50).fill(false),
+                physics: Array(50).fill(false),
+            },
+            history: {}
+        };
+
+        let roadmapData = {};
+        let activeRoadmapSubject = 'botany';
+
+        function loadRoadmapData() {
+            const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_ROADMAP_KEY));
+            if (storedData) {
+                // Merge stored data with defaults to handle new columns
+                roadmapData = {
+                    ...JSON.parse(JSON.stringify(defaultRoadmapData)), // Start with fresh defaults
+                    ...storedData,
+                    columnNames: {
+                        ...defaultRoadmapData.columnNames,
+                        ...storedData.columnNames
+                    },
+                    dailyProgress: {
+                        ...defaultRoadmapData.dailyProgress,
+                        ...storedData.dailyProgress
+                    }
+                };
+            } else {
+                roadmapData = JSON.parse(JSON.stringify(defaultRoadmapData)); // Deep copy
+                saveRoadmapData();
+            }
+            populateDateSelector();
+            checkAndResetRoadmap();
+        }
+
+        function saveRoadmapData() {
+            localStorage.setItem(LOCAL_STORAGE_ROADMAP_KEY, JSON.stringify(roadmapData));
+            console.log('Roadmap data saved locally.');
+        }
+
+        function checkAndResetRoadmap() {
+            const today = new Date().toDateString();
+            const lastResetDate = roadmapData.lastResetDate;
+
+            if (lastResetDate !== today) {
+                // Save today's progress to history before resetting
+                if (roadmapData.dailyProgress) {
+                    roadmapData.history[lastResetDate] = roadmapData.dailyProgress;
+                }
+
+                // Reset daily progress for all subjects
+                for (const subject in defaultRoadmapData.dailyProgress) {
+                    // Reset to the size of the new 10-column grid
+                    roadmapData.dailyProgress[subject] = Array(50).fill(false);
+                }
+
+                roadmapData.lastResetDate = today;
+                saveRoadmapData();
+                populateDateSelector();
+            }
+        }
+
+        function populateDateSelector() {
+            roadmapDateSelector.innerHTML = '<option value="today">Today</option>';
+            const historyDates = Object.keys(roadmapData.history).sort((a, b) => new Date(b) - new Date(a));
+            historyDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                roadmapDateSelector.appendChild(option);
+            });
+        }
+        
+        roadmapDateSelector.addEventListener('change', () => {
+            renderRoadmap(activeRoadmapSubject);
+        });
+
+        function showRoadmapSubTab(subject) {
+            activeRoadmapSubject = subject;
+            // Deactivate all sub-tabs and contents
+            for (const key in roadmapSubTabs) {
+                roadmapSubTabs[key].tab.classList.remove('active');
+                roadmapSubTabs[key].content.classList.remove('active');
+            }
+            // Activate the selected sub-tab and content
+            roadmapSubTabs[subject].tab.classList.add('active');
+            roadmapSubTabs[subject].content.classList.add('active');
+            // Render the grid for the selected subject
+            renderRoadmap(subject);
+        }
+
+        // Add listeners for roadmap sub-tabs
+        for (const subject in roadmapSubTabs) {
+            roadmapSubTabs[subject].tab.addEventListener('click', () => showRoadmapSubTab(subject));
+        }
+
+        function renderRoadmap(subject) {
+            const gridContainer = roadmapSubTabs[subject].grid;
+            gridContainer.innerHTML = '';
+            
+            const selectedDate = roadmapDateSelector.value;
+            const progressData = selectedDate === 'today' ? roadmapData.dailyProgress : roadmapData.history[selectedDate] || defaultRoadmapData.dailyProgress;
+            const columnNames = roadmapData.columnNames[subject];
+
+            // Renders a 5x10 grid (5 rows, 10 columns)
+            for (let col = 0; col < 10; col++) { // Changed from 5 to 10 columns
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'roadmap-column';
+                
+                const header = document.createElement('div');
+                header.className = 'roadmap-column-header';
+                header.textContent = columnNames[col] || '';
+                header.contentEditable = selectedDate === 'today'; // Only editable for "Today"
+                header.dataset.col = col;
+                header.addEventListener('blur', (e) => {
+                    const newName = e.target.textContent.trim();
+                    if (newName) {
+                        roadmapData.columnNames[subject][e.target.dataset.col] = newName;
+                        saveRoadmapData();
+                    } else {
+                        // Revert if empty
+                        e.target.textContent = roadmapData.columnNames[subject][e.target.dataset.col];
+                    }
+                });
+                header.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') e.preventDefault();
+                });
+                columnDiv.appendChild(header);
+
+                for (let row = 0; row < 1; row++) {
+                    // The calculation for the index remains the same: col * num_rows + row
+                    const index = col * 1 + row;
+                    const gridItem = document.createElement('div');
+                    gridItem.className = 'roadmap-grid-item';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = progressData[subject][index];
+                    checkbox.disabled = selectedDate !== 'today'; // Disable for historical view
+                    checkbox.dataset.index = index;
+                    checkbox.addEventListener('change', (e) => {
+                        roadmapData.dailyProgress[subject][e.target.dataset.index] = e.target.checked;
+                        saveRoadmapData();
+                    });
+
+                    gridItem.appendChild(checkbox);
+                    columnDiv.appendChild(gridItem);
+                }
+                gridContainer.appendChild(columnDiv);
+            }
+        }
+
+        // --- Trac Tab Logic ---
+        const LOCAL_STORAGE_TRAC_KEY = 'tracData';
+        const fixedColumns = ['Chapter Name', 'Actions']; // Columns that cannot be edited or deleted
+        const revisionColumns = ['revision1', 'revision2', 'revision3', 'revision4', 'revision5']; // Keys for revision sub-columns
+
+        // Define the default order and properties of built-in columns
+        const defaultColumnOrder = [
+            { key: 'lec', name: 'Lec', editable: true, deletable: false },
+            { key: 'dpp', name: 'DPP', editable: true, deletable: false },
+            { key: 'module', name: 'Module', editable: true, deletable: false },
+            { key: 'neetPyq', name: 'NEET PYQ', editable: true, deletable: false },
+            { key: 'jeePyq', name: 'JEE PYQ', editable: true, deletable: false },
+            { key: 'referenceBook', name: 'REF BOOK', editable: true, deletable: false },
+            { key: 'mainsLvl', name: 'MAINS LVL', editable: true, deletable: false },
+            { key: 'ncert', name: 'NCERT', editable: true, deletable: false },
+            { key: 'pitaraLtl', name: 'PITARA (LTL)', editable: true, deletable: false },
+            { key: 'infinityPractice', name: 'INFINITY PRACTISE', editable: true, deletable: false },
+            { key: 'kps', name: 'KPS', editable: true, deletable: false }, // New
+            { key: 'nps', name: 'NPS', editable: true, deletable: false }, // New
+            { key: 'highAssignment', name: 'High Assignment', editable: true, deletable: false }, // New
+            { key: 'prepMeter', name: 'PREP METER', editable: true, deletable: false },
+            // Revision columns are handled separately for header colspan, but their individual names are editable
+            { key: 'revision1', name: 'R1', editable: true, deletable: false },
+            { key: 'revision2', name: 'R2', editable: true, deletable: false },
+            { key: 'revision3', name: 'R3', editable: true, deletable: false },
+            { key: 'revision4', name: 'R4', editable: true, deletable: false },
+            { key: 'revision5', name: 'R5', editable: true, deletable: false }
+        ];
+
+        let tracData = {
+            bio: [],
+            chem: [],
+            phys: [],
+            // customColumnNames will store user-defined names for all columns (built-in and dynamic)
+            customColumnNames: {}
+        };
+
+        // Initialize customColumnNames with default values
+        defaultColumnOrder.forEach(col => {
+            tracData.customColumnNames[col.key] = col.name;
+        });
+
+        // Elements for adding custom columns
+        const newTracColumnInputBio = document.getElementById('newTracColumnInput');
+        const addTracColumnButtonBio = document.getElementById('addTracColumnButton');
+        const newTracColumnInputChem = document.getElementById('newTracColumnInputChem');
+        const addTracColumnButtonChem = document.getElementById('addTracColumnButtonChem');
+        const newTracColumnInputPhys = document.getElementById('newTracColumnInputPhys');
+        const addTracColumnButtonPhys = document.getElementById('addTracColumnButtonPhys');
+
+
+        const tracBioSubTab = document.getElementById('tracBioSubTab');
+        const tracChemSubTab = document.getElementById('tracChemSubTab');
+        const tracPhysSubTab = document.getElementById('tracPhysSubTab');
+        const tracBioContent = document.getElementById('tracBioContent');
+        const tracChemContent = document.getElementById('tracChemContent');
+        const tracPhysContent = document.getElementById('tracPhysContent');
+
+        const newBioChapterInput = document.getElementById('newBioChapterInput');
+        const addBioChapterButton = document.getElementById('addBioChapterButton');
+        const bioChaptersDiv = document.getElementById('bioChapters');
+
+        const newChemChapterInput = document.getElementById('newChemChapterInput');
+        const addChemChapterButton = document.getElementById('addChemChapterButton');
+        const chemChaptersDiv = document.getElementById('chemChapters');
+
+        const newPhysChapterInput = document.getElementById('newPhysChapterInput');
+        const addPhysChapterButton = document.getElementById('addPhysChapterButton');
+        const physChaptersDiv = document.getElementById('physChapters');
+
+        function showTracSubTab(subject) {
+            tracBioSubTab.classList.remove('active');
+            tracChemSubTab.classList.remove('active');
+            tracPhysSubTab.classList.remove('active');
+            tracBioContent.classList.remove('active');
+            tracChemContent.classList.remove('active');
+            tracPhysContent.classList.remove('active');
+
+            if (subject === 'bio') {
+                tracBioSubTab.classList.add('active');
+                tracBioContent.classList.add('active');
+                renderTracChapters('bio');
+            } else if (subject === 'chem') {
+                tracChemSubTab.classList.add('active');
+                tracChemContent.classList.add('active');
+                renderTracChapters('chem');
+            } else if (subject === 'phys') {
+                tracPhysSubTab.classList.add('active');
+                tracPhysContent.classList.add('active');
+                renderTracChapters('phys');
+            }
+        }
+
+        tracBioSubTab.addEventListener('click', () => showTracSubTab('bio'));
+        tracChemSubTab.addEventListener('click', () => showTracSubTab('chem'));
+        tracPhysSubTab.addEventListener('click', () => showTracSubTab('phys'));
+
+        function loadTracData() {
+            const storedTracData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_TRAC_KEY));
+            if (storedTracData) {
+                // Ensure default columns are present and merge custom names
+                tracData.bio = storedTracData.bio || [];
+                tracData.chem = storedTracData.chem || [];
+                tracData.phys = storedTracData.phys || [];
+
+                // Re-initialize customColumnNames with defaults, then overwrite with stored custom names
+                defaultColumnOrder.forEach(col => {
+                    tracData.customColumnNames[col.key] = col.name;
+                });
+                if (storedTracData.customColumnNames) {
+                    Object.assign(tracData.customColumnNames, storedTracData.customColumnNames);
+                }
+                // Add any dynamically added columns from stored data
+                if (storedTracData.dynamicColumns) {
+                    tracData.dynamicColumns = storedTracData.dynamicColumns;
+                    storedTracData.dynamicColumns.forEach(colKey => {
+                        if (!tracData.customColumnNames[colKey]) { // Add if not already present
+                             tracData.customColumnNames[colKey] = storedTracData.customColumnNames[colKey] || colKey;
+                        }
+                    });
+                } else {
+                    tracData.dynamicColumns = [];
+                }
+            } else {
+                tracData.dynamicColumns = []; // Initialize if no stored data
+            }
+        }
+
+        function saveTracData() {
+            localStorage.setItem(LOCAL_STORAGE_TRAC_KEY, JSON.stringify(tracData));
+            console.log('Trac data saved locally.');
+        }
+
+        function updateCustomColumnName(key, newName) {
+            tracData.customColumnNames[key] = newName;
+            saveTracData();
+            // Re-render the current tab to reflect the name change immediately
+            const activeSubTab = document.querySelector('.sub-tab-button.active');
+            if (activeSubTab) {
+                showTracSubTab(activeSubTab.id.replace('trac', '').replace('SubTab', '').toLowerCase());
+            }
+        }
+
+        function renderTracChapters(subject) {
+            let targetDiv;
+            let chaptersArray;
+            if (subject === 'bio') {
+                targetDiv = bioChaptersDiv;
+                chaptersArray = tracData.bio;
+            } else if (subject === 'chem') {
+                targetDiv = chemChaptersDiv;
+                chaptersArray = tracData.chem;
+            } else if (subject === 'phys') {
+                targetDiv = physChaptersDiv;
+                chaptersArray = tracData.phys;
+            } else {
+                return;
+            }
+
+            targetDiv.innerHTML = '';
+
+            if (chaptersArray.length === 0) {
+                targetDiv.innerHTML = `<p class="text-gray-500 text-center py-4">No chapters added yet. Add one above!</p>`;
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'trac-table';
+
+            // Construct headers dynamically
+            let headerHtml = '<thead><tr><th rowspan="2">Chapter Name</th>';
+            let subHeaderHtml = '<tr>';
+
+            // Combine default and dynamic columns, maintaining order
+            const allColumnKeys = defaultColumnOrder.map(col => col.key).concat(tracData.dynamicColumns.filter(key => !defaultColumnOrder.some(dCol => dCol.key === key)));
+
+            allColumnKeys.forEach(colKey => {
+                const isRevisionCol = revisionColumns.includes(colKey);
+                const isBuiltIn = defaultColumnOrder.some(col => col.key === colKey);
+                const isDynamic = tracData.dynamicColumns.includes(colKey);
+
+                if (!isRevisionCol) {
+                    // Main headers (excluding individual revision columns)
+                    const colName = tracData.customColumnNames[colKey] || colKey;
+                    const isEditable = isBuiltIn ? defaultColumnOrder.find(c => c.key === colKey).editable : true; // Dynamic columns are always editable
+                    const isDeletable = isDynamic; // Only dynamic columns can be deleted
+
+                    headerHtml += `<th rowspan="2" ${isEditable ? 'contenteditable="true"' : ''} data-column-key="${colKey}">${colName}`;
+                    if (isDeletable) {
+                        headerHtml += `<button class="delete-column-btn" data-column-key="${colKey}">x</button>`;
+                    }
+                    headerHtml += `</th>`;
+                }
+            });
+
+            // Add the Revision header with colspan
+            headerHtml += `<th colspan="5">REVISION</th><th rowspan="2">Actions</th></tr>`;
+
+            // Add sub-headers for Revision columns
+            revisionColumns.forEach(colKey => {
+                const colName = tracData.customColumnNames[colKey] || colKey;
+                const isEditable = defaultColumnOrder.find(c => c.key === colKey).editable;
+                subHeaderHtml += `<th ${isEditable ? 'contenteditable="true"' : ''} data-column-key="${colKey}">${colName}</th>`;
+            });
+            subHeaderHtml += `</tr>`;
+
+            table.innerHTML = headerHtml + subHeaderHtml + '<tbody></tbody>';
+            const tbody = table.querySelector('tbody');
+
+            chaptersArray.forEach(chapter => {
+                const row = document.createElement('tr');
+                row.dataset.id = chapter.id;
+                row.dataset.subject = subject;
+
+                let rowHtml = `<td>${chapter.name}</td>`;
+
+                allColumnKeys.forEach(colKey => {
+                    // Ensure all columns (built-in and dynamic) are rendered
+                    const isChecked = chapter[colKey] || false; // Default to false if not present
+                    rowHtml += `<td><input type="checkbox" data-column="${colKey}" ${isChecked ? 'checked' : ''}></td>`;
+                });
+
+                rowHtml += `<td><button class="btn-danger text-xs px-2 py-1 delete-chapter-btn">Delete</button></td>`;
+                row.innerHTML = rowHtml;
+                tbody.appendChild(row);
+            });
+
+            targetDiv.appendChild(table);
+
+            // Add event listeners for editable column headers
+            table.querySelectorAll('th[contenteditable="true"]').forEach(th => {
+                th.addEventListener('blur', (event) => {
+                    const columnKey = event.target.dataset.columnKey;
+                    const newName = event.target.textContent.trim();
+                    if (columnKey && newName) {
+                        updateCustomColumnName(columnKey, newName);
+                    } else {
+                        // Revert to previous name if empty
+                        event.target.textContent = tracData.customColumnNames[columnKey];
+                    }
+                });
+                // Prevent new lines in editable headers
+                th.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        event.target.blur(); // Trigger blur to save changes
+                    }
+                });
+            });
+
+            // Add event listeners for delete column buttons
+            table.querySelectorAll('.delete-column-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const columnKey = event.target.dataset.columnKey;
+                    deleteTracColumn(columnKey);
+                });
+            });
+
+
+            tbody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (event) => {
+                    const chapterId = parseInt(event.target.closest('tr').dataset.id);
+                    const subject = event.target.closest('tr').dataset.subject;
+                    const column = event.target.dataset.column;
+                    toggleTracCheckbox(subject, chapterId, column, event.target.checked);
+                });
+            });
+
+            tbody.querySelectorAll('.delete-chapter-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const chapterId = parseInt(event.target.closest('tr').dataset.id);
+                    const subject = event.target.closest('tr').dataset.subject;
+                    deleteTracChapter(subject, chapterId);
+                });
+            });
+        }
+
+        function addTracChapter(subject, inputElement) {
+            const chapterName = inputElement.value.trim();
+            if (chapterName) {
+                const newChapter = {
+                    id: Date.now(),
+                    name: chapterName,
+                };
+                // Initialize all existing columns (built-in and dynamic) to false
+                const allColumnKeys = defaultColumnOrder.map(col => col.key).concat(tracData.dynamicColumns);
+                allColumnKeys.forEach(colKey => {
+                    newChapter[colKey] = false;
+                });
+
+                tracData[subject].push(newChapter);
+                inputElement.value = '';
+                saveTracData();
+                renderTracChapters(subject);
+            }
+        }
+
+        function toggleTracCheckbox(subject, chapterId, column, isChecked) {
+            const chapterIndex = tracData[subject].findIndex(c => c.id === chapterId);
+            if (chapterIndex > -1) {
+                tracData[subject][chapterIndex][column] = isChecked;
+                saveTracData();
+            }
+        }
+
+        function deleteTracChapter(subject, chapterId) {
+            tracData[subject] = tracData[subject].filter(c => c.id !== chapterId);
+            saveTracData();
+            renderTracChapters(subject);
+        }
+
+        // Function to add a new custom column
+        function addTracColumn(inputElement) {
+            const columnName = inputElement.value.trim();
+            if (!columnName) {
+                alert("Column name cannot be empty.");
+                return;
+            }
+
+            // Generate a unique key for the new column
+            const columnKey = 'customCol_' + Date.now();
+
+            // Add to custom column names and dynamic columns list
+            tracData.customColumnNames[columnKey] = columnName;
+            tracData.dynamicColumns.push(columnKey);
+
+            // Initialize this new column for all existing chapters in all subjects to false
+            ['bio', 'chem', 'phys'].forEach(subject => {
+                tracData[subject].forEach(chapter => {
+                    chapter[columnKey] = false;
+                });
+            });
+
+            inputElement.value = '';
+            saveTracData();
+            // Re-render the current tab to show the new column
+            const activeSubTab = document.querySelector('.sub-tab-button.active');
+            if (activeSubTab) {
+                showTracSubTab(activeSubTab.id.replace('trac', '').replace('SubTab', '').toLowerCase());
+            }
+        }
+
+        // Function to delete a custom column
+        function deleteTracColumn(columnKeyToDelete) {
+            // Prevent deletion of built-in columns
+            const isBuiltIn = defaultColumnOrder.some(col => col.key === columnKeyToDelete);
+            if (isBuiltIn) {
+                alert("Cannot delete built-in columns.");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete the column "${tracData.customColumnNames[columnKeyToDelete]}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            // Remove from custom column names
+            delete tracData.customColumnNames[columnKeyToDelete];
+
+            // Remove from dynamic columns list
+            tracData.dynamicColumns = tracData.dynamicColumns.filter(key => key !== columnKeyToDelete);
+
+            // Remove this column's data from all chapters in all subjects
+            ['bio', 'chem', 'phys'].forEach(subject => {
+                tracData[subject].forEach(chapter => {
+                    delete chapter[columnKeyToDelete];
+                });
+            });
+
+            saveTracData();
+            // Re-render the current tab to reflect the changes
+            const activeSubTab = document.querySelector('.sub-tab-button.active');
+            if (activeSubTab) {
+                showTracSubTab(activeSubTab.id.replace('trac', '').replace('SubTab', '').toLowerCase());
+            }
+        }
+
+
+        addBioChapterButton.addEventListener('click', () => addTracChapter('bio', newBioChapterInput));
+        addChemChapterButton.addEventListener('click', () => addTracChapter('chem', newChemChapterInput));
+        addPhysChapterButton.addEventListener('click', () => addTracChapter('phys', newPhysChapterInput));
+
+        addTracColumnButtonBio.addEventListener('click', () => addTracColumn(newTracColumnInputBio));
+        addTracColumnButtonChem.addEventListener('click', () => addTracColumn(newTracColumnInputChem));
+        addTracColumnButtonPhys.addEventListener('click', () => addTracColumn(newTracColumnInputPhys));
+
+
+        // --- Initial Load ---
+        window.onload = function() {
+            checkAndResetDailyTracker();
+            loadTodoCategories(); // Load new To-Do data structure
+            loadRoadmapData(); // Load roadmap data and perform daily reset check
+            loadTracData();
+            showMainTab('dailyTracker');
+        };
+
+        // Save data before the user leaves the page
+        window.addEventListener('beforeunload', () => {
+            saveDailyTrackerData();
+            saveTodoCategories(); // Save new To-Do data structure
+            saveTracData();
+            saveRoadmapData();
+        });
+    </script>
+</body>
+</html>
